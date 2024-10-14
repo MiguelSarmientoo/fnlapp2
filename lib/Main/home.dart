@@ -342,7 +342,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         Text(
-          profileData?.responsabilitylevel ?? '',
+          profileData?.hierarchicalLevel ?? '',
           style: GoogleFonts.poppins(
             fontSize: 14.0,
             color: Colors.grey[600],
@@ -1125,24 +1125,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class ProfileData {
   final String email;
-  final String responsabilitylevel;
+  final String hierarchicalLevel;
   final String? profileImage;
 
   ProfileData({
     required this.email,
-    required this.responsabilitylevel,
+    required this.hierarchicalLevel,
     this.profileImage,
   });
 
   factory ProfileData.fromJson(Map<String, dynamic> json) {
     return ProfileData(
       email: json['User']['email'],
-      responsabilitylevel: json['ResponsabilityLevel']['level'],
+      hierarchicalLevel: json['HierarchicalLevel']['level'],
       profileImage: json['User']['profileImage'],
     );
   }
   @override
   String toString() {
-    return 'ProfileData{profileImage: $profileImage, responsabilitylevel: $responsabilitylevel, email: $email}';
+    return 'ProfileData{profileImage: $profileImage, hierarchicalLevel: $hierarchicalLevel, email: $email}';
   }
 }

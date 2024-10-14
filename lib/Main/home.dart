@@ -1124,13 +1124,11 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class ProfileData {
-  final int id;
   final String email;
   final String responsabilitylevel;
   final String? profileImage;
 
   ProfileData({
-    required this.id,
     required this.email,
     required this.responsabilitylevel,
     this.profileImage,
@@ -1138,7 +1136,6 @@ class ProfileData {
 
   factory ProfileData.fromJson(Map<String, dynamic> json) {
     return ProfileData(
-      id: json['id'],
       email: json['User']['email'],
       responsabilitylevel: json['ResponsabilityLevel']['level'],
       profileImage: json['User']['profileImage'],
@@ -1146,6 +1143,6 @@ class ProfileData {
   }
   @override
   String toString() {
-    return 'ProfileData{id: $id, profileImage: $profileImage, responsabilitylevel: $responsabilitylevel, email: $email}';
+    return 'ProfileData{profileImage: $profileImage, responsabilitylevel: $responsabilitylevel, email: $email}';
   }
 }

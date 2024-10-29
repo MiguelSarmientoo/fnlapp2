@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:fnlapp/Login/login.dart';
 import 'package:fnlapp/Main/profile.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fnlapp/SharedPreferences/sharedpreference.dart';
 import 'package:fnlapp/Funcy/screens/splash_screen.dart';
 import 'package:fnlapp/Main/step_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:io';
+import 'package:lottie/lottie.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:typed_data';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -26,6 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<ProfileData> profileDataList = [];
   ProfileData? profileData;
   bool isProfileOpen = false;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -33,6 +40,59 @@ class _HomeScreenState extends State<HomeScreen> {
     remainingDays = calculateRemainingDays();
     obtenerNivelEstresYProgramas();
     loadProfile();
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    XFile? pickedFile;
+
+    // Lógica para seleccionar la imagen
+    pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      print('Imagen seleccionada: ${pickedFile.path}');
+      await updateProfileImage(pickedFile); // Pasar el archivo seleccionado
+      loadProfile(); // Asegúrate de que esta función esté definida
+    } else {
+      print('No se seleccionó ninguna imagen.');
+    }
+  }
+
+  Future<void> updateProfileImage(XFile pickedFile) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int? userId = prefs.getInt('userId');
+
+    final uri = Uri.parse(
+        'http://localhost:3000/api/actualizarPerfil/$userId'); // Cambia la URL por la de tu servidor
+
+    var request = http.MultipartRequest('POST', uri);
+
+    if (kIsWeb) {
+      Uint8List fileBytes = await pickedFile.readAsBytes();
+
+      request.files.add(http.MultipartFile.fromBytes(
+        'profileImage',
+        fileBytes,
+        filename: pickedFile.name,
+      ));
+    } else {
+      request.files.add(await http.MultipartFile.fromPath(
+        'profileImage', // Nombre del campo en el backend
+        pickedFile.path,
+      ));
+    }
+
+    var response = await request.send();
+
+    if (response.statusCode == 200) {
+      print('Imagen de perfil actualizada exitosamente.');
+    } else {
+      print(
+          'Error al actualizar la imagen de perfil. Código de estado: ${response.statusCode}');
+      // Puedes imprimir el cuerpo de la respuesta para más detalles
+      final responseBody = await response.stream.bytesToString();
+      print('Respuesta del servidor: $responseBody');
+    }
   }
 
   Future<void> loadProfile() async {
@@ -313,14 +373,38 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 50,
-            backgroundColor: Colors.grey[200],
-            child: Icon(
-              Icons.account_circle, // Ícono dentro del avatar
-              size: 50, // Tamaño del ícono
-              color: Color(0xFF5027D0), // Color del ícono
-            ),
+          Stack(
+            children: [
+              if (profileData?.profileImage == null) ...{
+                CircleAvatar(
+                  radius: 50,
+                  backgroundColor: Colors.grey[200],
+                  child: ClipOval(
+                    child: Lottie.asset(
+                      profileData?.genderId == 1
+                          ? 'assets/lottie/avatar_mujer.json' // Archivo Lottie para mujer
+                          : 'assets/lottie/avatar_hombre.json', // Archivo Lottie para hombre
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              } else ...{
+                CircleAvatar(
+                  radius: 50,
+                  backgroundColor: Colors.grey[200],
+                  child:
+                      ClipOval(child: Image.memory(profileData!.profileImage!)),
+                ),
+              },
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: IconButton(
+                  icon: Icon(Icons.edit),
+                  onPressed: () => _pickImage(),
+                ),
+              ),
+            ],
           ),
           SizedBox(width: 15),
           _buildProfileInfo(),
@@ -1126,23 +1210,27 @@ class _HomeScreenState extends State<HomeScreen> {
 class ProfileData {
   final String email;
   final String hierarchicalLevel;
-  final String? profileImage;
+  final int genderId;
+  final Uint8List? profileImage;
 
   ProfileData({
     required this.email,
     required this.hierarchicalLevel,
+    required this.genderId,
     this.profileImage,
   });
 
   factory ProfileData.fromJson(Map<String, dynamic> json) {
+    Uint8List? decodedImage;
+    if (json['profileImage'] != null) {
+      decodedImage = base64Decode(json['profileImage']);
+    }
+
     return ProfileData(
-      email: json['User']['email'],
-      hierarchicalLevel: json['HierarchicalLevel']['level'],
-      profileImage: json['User']['profileImage'],
+      email: json['email'] ?? '',
+      hierarchicalLevel: json['hierarchicalLevel'] ?? '',
+      genderId: json['gender_id'] ?? 0,
+      profileImage: decodedImage,
     );
-  }
-  @override
-  String toString() {
-    return 'ProfileData{profileImage: $profileImage, hierarchicalLevel: $hierarchicalLevel, email: $email}';
   }
 }

@@ -3,22 +3,22 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:fnlapp/SharedPreferences/sharedpreference.dart';
 import 'package:fnlapp/Main/cargarprograma.dart';
-import 'package:fnlapp/config.dart'; // Agrega esto al inicio de tu archivo
+import 'package:fnlapp/config.dart';
 
-class TestEstresQuestionScreen extends StatefulWidget {
-  const TestEstresQuestionScreen({Key? key}) : super(key: key);
+class ExitTestScreen extends StatefulWidget {
+  const ExitTestScreen({Key? key}) : super(key: key);
 
   @override
-  _TestEstresQuestionScreenState createState() => _TestEstresQuestionScreenState();
+  _ExitTestScreenState createState() => _ExitTestScreenState();
 }
 
-class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
-
+class _ExitTestScreenState extends State<ExitTestScreen> {
   int currentQuestionIndex = 0;
   String? selectedOption;
   bool showDetail = false;
-  final List<int?> selectedOptions = List<int?>.filled(23, null);  // Almacena las respuestas seleccionadas
+  final List<int?> selectedOptions = List<int?>.filled(23, null);
   int? userId;
+  
 final List<Map<String, String>> questions = [
   {
     "question": "Tener que hacer reportes tanto para sus jefes como para las personas de su equipo le preocupa, porque siente que debe cumplir con las expectativas de todos y eso le genera tensión.",
@@ -436,25 +436,23 @@ final List<Map<String, String>> questions = [
   }
 ];
 
-@override
+  @override
   void initState() {
     super.initState();
-    _loadUserId();  // Cargamos el ID del usuario al iniciar
+    _loadUserId();
   }
 
-  // Función para cargar el userId desde SharedPreferences
   Future<void> _loadUserId() async {
-    int? id = await getUserId();  // Función que obtienes de SharedPreferences
+    int? id = await getUserId();
     setState(() {
       userId = id;
     });
   }
 
-  // Función para seleccionar una opción
   void selectOption(int optionId) {
     setState(() {
-      selectedOption = 'option$optionId';  // Almacena la opción seleccionada
-      selectedOptions[currentQuestionIndex] = optionId;  // Guarda la respuesta para la pregunta actual
+      selectedOption = 'option$optionId';
+      selectedOptions[currentQuestionIndex] = optionId;
       showDetail = true;
     });
   }
@@ -464,7 +462,7 @@ final List<Map<String, String>> questions = [
       setState(() {
         currentQuestionIndex++;
         selectedOption = null;
-        showDetail = false;  // Oculta los detalles al pasar a la siguiente pregunta
+        showDetail = false;
       });
     }
   }
@@ -474,266 +472,138 @@ final List<Map<String, String>> questions = [
       setState(() {
         currentQuestionIndex--;
         selectedOption = null;
-        showDetail = false;  // Oculta los detalles al regresar a la pregunta anterior
+        showDetail = false;
       });
     }
   }
 
-  Future<void> submitTest() async {
-  final url = Uri.parse('${Config.apiUrl}/guardarTestEstres'); // URL para guardar el test de estrés
-  final updateEstresUrl = Uri.parse('${Config.apiUrl}/userestresessions/assign'); // URL para actualizar el estres_nivel_id
-  final programaUrl = Uri.parse('${Config.apiUrl}/userprograma/report/$userId'); // URL para generar el programa
+Future<void> submitTest() async {
+  final url = Uri.parse('${Config.apiUrl}/guardarTestEstresSalida');
 
   final Map<String, dynamic> data = {
     'user_id': userId,
-    'pregunta_1': selectedOptions[0],
-    'pregunta_2': selectedOptions[1],
-    'pregunta_3': selectedOptions[2],
-    'pregunta_4': selectedOptions[3],
-    'pregunta_5': selectedOptions[4],
-    'pregunta_6': selectedOptions[5],
-    'pregunta_7': selectedOptions[6],
-    'pregunta_8': selectedOptions[7],
-    'pregunta_9': selectedOptions[8],
-    'pregunta_10': selectedOptions[9],
-    'pregunta_11': selectedOptions[10],
-    'pregunta_12': selectedOptions[11],
-    'pregunta_13': selectedOptions[12],
-    'pregunta_14': selectedOptions[13],
-    'pregunta_15': selectedOptions[14],
-    'pregunta_16': selectedOptions[15],
-    'pregunta_17': selectedOptions[16],
-    'pregunta_18': selectedOptions[17],
-    'pregunta_19': selectedOptions[18],
-    'pregunta_20': selectedOptions[19],
-    'pregunta_21': selectedOptions[20],
-    'pregunta_22': selectedOptions[21],
-    'pregunta_23': selectedOptions[22],
+    for (int i = 0; i < selectedOptions.length; i++) 'pregunta_${i + 1}': selectedOptions[i],
     'estado': 'activo',
   };
 
-  // Calcular el totalScore basado en las opciones seleccionadas
-  int totalScore = selectedOptions.fold(0, (sum, value) => sum + (value ?? 0));
-
   try {
-    // Inicializa la variable nivelEstres con un valor predeterminado
-    String nivelEstres = ''; // Asignar valor inicial por si acaso no se actualiza
-    int estresNivelId = 0; // Inicializamos con el valor de LEVE (1)
-
-    // Primero obtenemos el gender_id desde la API para determinar el género del usuario
-    final genderResponse = await http.get(
-      Uri.parse('${Config.apiUrl}/userResponses/$userId'),
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: json.encode(data),
     );
 
-    if (genderResponse.statusCode == 200) {
-      final List<dynamic> userData = json.decode(genderResponse.body);
-      int genderId = userData[0]['gender_id']; // Obtenemos el gender_id del usuario
-
-      // Calcular el nivel de estrés basado en el totalScore y el género
-      if (totalScore <= 92) {
-        nivelEstres = 'LEVE';
-        estresNivelId = 1; // LEVE
-      } else if (totalScore > 92 && totalScore <= 138) {
-        if (genderId == 1 || genderId == null) {
-          nivelEstres = 'MODERADO';
-          estresNivelId = 2; // MODERADO
-        } else if (genderId == 2) {
-          if (totalScore <= 132) {
-            nivelEstres = 'MODERADO';
-            estresNivelId = 2;
-          } else {
-            nivelEstres = 'ALTO';
-            estresNivelId = 3; // ALTO
-          }
-        }
-      } else if (totalScore <= 161) {
-        if (genderId == 1 || genderId == null) {
-          if (totalScore > 138) {
-            nivelEstres = 'ALTO';
-            estresNivelId = 3;
-          }
-        } else if (genderId == 2) {
-          if (totalScore > 132) {
-            nivelEstres = 'ALTO';
-            estresNivelId = 3;
-          }
-        }
-      }
-
-      print('Nivel de Estrés del usuario logeado: $nivelEstres');
-
-      // Ahora hacemos la llamada para guardar el test con los datos del nivel de estrés
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: json.encode(data),
-      );
-
-      if (response.statusCode == 200) {
-        // Si el test de estrés se guarda correctamente, actualizamos el nivel de estrés
-        final Map<String, dynamic> updateData = {
-          'user_id': userId,
-          'estres_nivel_id': estresNivelId,
-        };
-
-        final updateResponse = await http.post(
-          updateEstresUrl,
-          headers: {"Content-Type": "application/json"},
-          body: json.encode(updateData),
-        );
-
-        if (updateResponse.statusCode == 200) {
-          // Aquí lanzamos la tercera API de forma asincrónica sin bloquear la UI
-          sendAsyncProgramaRequest(userId?.toString() ?? '', data);
-
-
-          // Redirigir a la pantalla de carga de inmediato
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CargarProgramaScreen(nivelEstres: nivelEstres),
-            ),
-          );
-        } else {
-          print('Error al actualizar el estres_nivel_id: ${updateResponse.body}');
-        }
-      } else {
-        print('Error: ${response.body}');
-      }
+    if (response.statusCode == 200) {
+      print('Test de salida guardado correctamente');
+      Navigator.pop(context); // Regresar o realizar otra acción después de guardar
     } else {
-      print('Error al obtener el gender_id: ${genderResponse.statusCode}');
+      print('Error al guardar el test de salida: ${response.body}');
     }
   } catch (e) {
     print('Error al enviar el test: $e');
   }
 }
 
-// Función para enviar la tercera API de forma asincrónica
-Future<void> sendAsyncProgramaRequest(String userId, Map<String, dynamic> data) async {
-  final programaUrl = Uri.parse('${Config.apiUrl}/userprograma/report/$userId');
-
-  try {
-    // Enviar la petición de forma asíncrona
-    final programaResponse = await http.post(
-      programaUrl,
-      headers: {"Content-Type": "application/json"},
-      body: json.encode(data),
-    );
-
-    if (programaResponse.statusCode == 200) {
-      print('Programa generado correctamente');
-    } else {
-      print('Error al generar el programa: ${programaResponse.body}');
-    }
-  } catch (e) {
-    print('Error al enviar la solicitud para generar el programa: $e');
-  }
-}
-
-
-
-
 
   @override
-Widget build(BuildContext context) {
-  final question = questions[currentQuestionIndex];
+  Widget build(BuildContext context) {
+    final question = questions[currentQuestionIndex];
 
-  return Scaffold(
-    body: SingleChildScrollView( // Envolver el contenido principal en un SingleChildScrollView
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(height: 60),
-            Text(
-              question['question'] ?? '',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 40),
-            Text(
-              question['description'] ?? '',
-              style: TextStyle(fontSize: 16, color: Colors.black54),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 25),
-            if (question['image'] != null && question['image']!.isNotEmpty)
-              Image.asset(
-                question['image'] ?? '',
-                height: 120,
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(height: 60),
+              Text(
+                question['question'] ?? '',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
               ),
-            SizedBox(height: 25),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                for (int i = 1; i <= 7; i++)
-                  GestureDetector(
-                    onTap: () => selectOption(i),
-                    child: AnimatedContainer(
-                      duration: Duration(milliseconds: 300),
-                      width: MediaQuery.of(context).size.width * 0.9,
-                      margin: const EdgeInsets.symmetric(vertical: 10),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: selectedOption == 'option$i' ? Colors.deepPurple : Colors.grey[200],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            question['option$i'] ?? '',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: selectedOption == 'option$i' ? Colors.white : Colors.black,
-                              fontFamily: 'NotoColorEmoji',
-                            ),
-                          ),
-                          if (selectedOption == 'option$i' && showDetail)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: Text(
-                                question['detail$i'] ?? '',
-                                style: TextStyle(fontSize: 12, color: Colors.white70),
+              SizedBox(height: 40),
+              Text(
+                question['description'] ?? '',
+                style: TextStyle(fontSize: 16, color: Colors.black54),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 25),
+              if (question['image'] != null && question['image']!.isNotEmpty)
+                Image.asset(
+                  question['image'] ?? '',
+                  height: 120,
+                ),
+              SizedBox(height: 25),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  for (int i = 1; i <= 7; i++)
+                    GestureDetector(
+                      onTap: () => selectOption(i),
+                      child: AnimatedContainer(
+                        duration: Duration(milliseconds: 300),
+                        width: MediaQuery.of(context).size.width * 0.9,
+                        margin: const EdgeInsets.symmetric(vertical: 10),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: selectedOption == 'option$i' ? Colors.deepPurple : Colors.grey[200],
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              question['option$i'] ?? '',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: selectedOption == 'option$i' ? Colors.white : Colors.black,
+                                fontFamily: 'NotoColorEmoji',
                               ),
                             ),
-                        ],
+                            if (selectedOption == 'option$i' && showDetail)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10),
+                                child: Text(
+                                  question['detail$i'] ?? '',
+                                  style: TextStyle(fontSize: 12, color: Colors.white70),
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                     ),
+                ],
+              ),
+              SizedBox(height: 20),
+              if (currentQuestionIndex > 0)
+                TextButton(
+                  onPressed: goToPreviousQuestion,
+                  child: Text(
+                    'Volver',
+                    style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.w600, fontSize: 16),
                   ),
-              ],
-            ),
-            SizedBox(height: 20), // Espacio adicional para el botón
-            if (currentQuestionIndex > 0)
-              TextButton(
-                onPressed: goToPreviousQuestion,
+                ),
+              SizedBox(height: 15),
+              ElevatedButton(
+                onPressed: selectedOption != null
+                    ? (currentQuestionIndex == questions.length - 1 ? submitTest : goToNextQuestion)
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: selectedOption != null ? Color.fromARGB(255, 75, 29, 154) : Colors.grey,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  padding: EdgeInsets.symmetric(horizontal: 40),
+                ),
                 child: Text(
-                  'Volver',
-                  style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.w600, fontSize: 16),
+                  currentQuestionIndex == questions.length - 1 ? 'Finalizar' : 'Siguiente',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
               ),
-            SizedBox(height: 15),
-            ElevatedButton(
-              onPressed: selectedOption != null
-                  ? (currentQuestionIndex == questions.length - 1 ? submitTest : goToNextQuestion)
-                  : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: selectedOption != null ? Color.fromARGB(255, 75, 29, 154) : Colors.grey,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                padding: EdgeInsets.symmetric(horizontal: 40),
-              ),
-              child: Text(
-                currentQuestionIndex == questions.length - 1 ? 'Finalizar' : 'Siguiente',
-                style: TextStyle(fontSize: 16, color: Colors.white),
-              ),
-            ),
-            SizedBox(height: 30), // Asegurar suficiente espacio al final
-          ],
+              SizedBox(height: 30),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 }

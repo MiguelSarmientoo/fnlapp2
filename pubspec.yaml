@@ -74,33 +74,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/login.png
-    - assets/logo.png
-    - assets/fondoFNL.jpg
-    - assets/home.png
-    - assets/chat.png
-    - assets/profile.png
-    - assets/icon/divisor.png
-    - assets/logos/fnl.png
-    - assets/testestres/estresimg.png
-    - assets/testestres/pregunta01.jpeg
-    - assets/testestres/pregunta02.png
-    - assets/testestres/pregunta03.png
-    - assets/testestres/pregunta04.png
-    - assets/testestres/pregunta05.png
-    - assets/testestres/pregunta06.png
-    - assets/testestres/pregunta07.png
-    - assets/testestres/pregunta08.png
-    - assets/testestres/pregunta09.png
-    - assets/testestres/pregunta10.png
-    - assets/fondosplash.png
-    - assets/logo_funcy_btn.png
-    - assets/logo_funcy_splash.png
-    - assets/logo_funcy_scale.png
-    - assets/user_img.jpg
-    - assets/imgstecnicas/respiracion7.png
-    - assets/imgstecnicas/respiracion7_2.png
-    - assets/imgstecnicas/respiracion7_3.png
+    - assets/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

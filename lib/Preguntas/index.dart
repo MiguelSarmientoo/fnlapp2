@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:fnlapp/SharedPreferences/sharedpreference.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fnlapp/config.dart'; // Agrega esto al inicio de tu archivo
 
 
 import '../Util/api_service.dart';
@@ -79,7 +80,7 @@ class _IndexScreenState extends State<IndexScreen> {
         return;
       }
 
-      final url = 'http://localhost:3000/api/users/$userId';
+      final url = '${Config.apiUrl}/users/$userId';
       final response = await http.put(
         Uri.parse(url),
         headers: {
@@ -235,7 +236,7 @@ class _IndexScreenState extends State<IndexScreen> {
 
     try {
       var response = await http.post(
-        Uri.parse('http://localhost:3000/api/guardarUserResponses'),
+        Uri.parse('${Config.apiUrl}/guardarUserResponses'),
         headers: {
           'Content-Type': 'application/json',
         },

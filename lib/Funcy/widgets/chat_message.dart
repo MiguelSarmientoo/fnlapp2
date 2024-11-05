@@ -23,7 +23,7 @@ class ChatMessage extends StatefulWidget {
 
 class _ChatMessageState extends State<ChatMessage> {
   final FlutterTts flutterTts = FlutterTts();
-  bool isPlaying = false; // Estado de la reproducción
+  bool isPlaying = false;
 
   @override
   void initState() {
@@ -32,65 +32,36 @@ class _ChatMessageState extends State<ChatMessage> {
   }
 
   void _initializeTts() {
-  flutterTts.setCompletionHandler(() async {
-    print('TTS completó la reproducción del mensaje.');
-    await Future.delayed(Duration(milliseconds: 100));  // Pequeña pausa
-    if (mounted) {
-      setState(() {
-        isPlaying = false;
-        print('El estado de isPlaying es: $isPlaying');
-      });
-    }
-  });
+    flutterTts.setCompletionHandler(() async {
+      setState(() => isPlaying = false);
+    });
 
-  flutterTts.setCancelHandler(() {
-    print('TTS canceló la reproducción.');
-    if (mounted) {
-      setState(() {
-        isPlaying = false;
-      });
-    }
-  });
+    flutterTts.setCancelHandler(() {
+      setState(() => isPlaying = false);
+    });
 
-  flutterTts.setErrorHandler((message) {
-    print('TTS encontró un error: $message');
-    if (mounted) {
-      setState(() {
-        isPlaying = false;
-      });
-    }
-  });
-}
+    flutterTts.setErrorHandler((message) {
+      setState(() => isPlaying = false);
+    });
+  }
 
   void _speakMessage() async {
-  if (isPlaying) {
-    await flutterTts.stop();
-    print('Se detuvo la reproducción del mensaje.');
-    setState(() {
-      isPlaying = false;
-    });
-  } else {
-    await flutterTts.setLanguage("es-ES");
-    await flutterTts.setPitch(1.0);
-    await flutterTts.setSpeechRate(0.7);
-
-    print('Iniciando la reproducción del mensaje: "${widget.message}"');
-    setState(() {
-      isPlaying = true;
-    });
-    await flutterTts.speak(widget.message);
+    if (isPlaying) {
+      await flutterTts.stop();
+      setState(() => isPlaying = false);
+    } else {
+      await flutterTts.setLanguage("es-ES");
+      await flutterTts.setPitch(1.0);
+      await flutterTts.setSpeechRate(0.7);
+      setState(() => isPlaying = true);
+      await flutterTts.speak(widget.message);
+    }
   }
-  print('El estado de isPlaying es: $isPlaying');
-}
-
 
   List<TextSpan> _buildTextSpans(String text) {
     List<TextSpan> spans = [];
-    final RegExp urlRegExp = RegExp(r'(https?://[^\s()<>"]+)');
-    final RegExp boldRegExp = RegExp(r'\*\*(.*?)\*\*');
-    final RegExp italicRegExp = RegExp(r'\[Ver video aquí\]');
-    final RegExp combinedRegExp = RegExp(r'(https?://[^\s()<>"]+)|(\*\*(.*?)\*\*)|(\[Ver video aquí\])');
-
+    final RegExp combinedRegExp = RegExp(
+        r'(https?://[^\s()<>"]+)|(\*\*(.*?)\*\*)|(\[Ver video aquí\])');
     final matches = combinedRegExp.allMatches(text);
 
     int lastMatchEnd = 0;
@@ -98,10 +69,9 @@ class _ChatMessageState extends State<ChatMessage> {
       if (match.start > lastMatchEnd) {
         spans.add(TextSpan(
           text: text.substring(lastMatchEnd, match.start),
-          style: TextStyle(color: widget.userType != 1 ? Colors.white : Colors.black),
+          style: TextStyle(
+              color: widget.userType != 1 ? Colors.white : Colors.black),
         ));
-        print("Valor de widget.userType: ${widget.userType}");
-        print("Tipo de widget.userType: ${widget.userType.runtimeType}");
       }
 
       if (match.group(1) != null) {
@@ -113,8 +83,6 @@ class _ChatMessageState extends State<ChatMessage> {
             ..onTap = () async {
               if (await canLaunch(url)) {
                 await launch(url);
-              } else {
-                print('No se puede abrir el enlace: $url');
               }
             },
         ));
@@ -150,79 +118,40 @@ class _ChatMessageState extends State<ChatMessage> {
     return spans;
   }
 
-  String videoThumbnailUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQe3IymTZ4kS68lCty_j3iy0oSOIGiVk6Zw2A&usqp=CAU';
-
   @override
   Widget build(BuildContext context) {
-    print("ChatMessage widget se está reconstruyendo con $isPlaying");
     return Column(
       crossAxisAlignment: widget.userType != 1 ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
-        widget.userType != 1
-            ? Padding(
-                padding: EdgeInsets.only(left: 8.0, right: 8.0),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Usted',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(width: 6.0),
-                      CircleAvatar(
-                        radius: 20.0,
-                        backgroundColor: Colors.transparent,
-                        child: ClipOval(
-                          child: Image.asset(
-                            widget.userType != 1
-                                ? 'assets/user_img.jpg'
-                                : 'assets/logo_funcy_scale.png',
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    ],
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: 20.0,
+                backgroundColor: Colors.transparent,
+                child: ClipOval(
+                  child: Image.asset(
+                    widget.userType != 1 ? 'assets/user_img.jpg' : 'assets/logo_funcy_scale.png',
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
                   ),
                 ),
-              )
-            : Padding(
-                padding: EdgeInsets.only(left: 8.0, right: 8.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircleAvatar(
-                      radius: 20.0,
-                      backgroundColor: Colors.transparent,
-                      child: ClipOval(
-                        child: Image.asset(
-                          widget.userType != 1
-                              ? 'assets/user_img.jpg'
-                              : 'assets/logo_funcy_scale.png',
-                          width: 60,
-                          height: 60,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 6.0),
-                    Text(
-                      'Funcy',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Expanded(child: SizedBox()),
-                  ],
+              ),
+              SizedBox(width: 6.0),
+              Text(
+                widget.userType != 1 ? 'Usted' : 'Funcy',
+                style: TextStyle(
+                  color: const Color.fromARGB(255, 255, 255, 255),
+                  fontWeight: FontWeight.bold,
                 ),
               ),
+              Expanded(child: SizedBox()),
+            ],
+          ),
+        ),
         Align(
           alignment: widget.userType != 1 ? Alignment.centerRight : Alignment.centerLeft,
           child: Container(
@@ -234,19 +163,17 @@ class _ChatMessageState extends State<ChatMessage> {
             ),
             padding: EdgeInsets.all(10.0),
             decoration: BoxDecoration(
-              color: widget.userType != 1
-                  ? Color.fromARGB(255, 39, 139, 70)
-                  : Color(0xFFF2F7FB),
+              color: widget.userType != 1 ? Color.fromARGB(143, 154, 82, 212) : Color.fromARGB(232, 242, 247, 251),
               borderRadius: BorderRadius.circular(10.0),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                if (widget.message.contains('https://') || widget.message.contains('http://'))
+                if (widget.message.contains('http://') || widget.message.contains('https://'))
                   Column(
                     children: [
                       Image.network(
-                        videoThumbnailUrl,
+                        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQe3IymTZ4kS68lCty_j3iy0oSOIGiVk6Zw2A&usqp=CAU',
                         width: double.infinity,
                         height: 120,
                         fit: BoxFit.cover,
@@ -268,9 +195,7 @@ class _ChatMessageState extends State<ChatMessage> {
                       widget.time,
                       style: TextStyle(
                         fontSize: 12.0,
-                        color: widget.userType != 1
-                            ? Color.fromARGB(255, 226, 226, 226)
-                            : Color.fromARGB(255, 101, 101, 101),
+                        color: widget.userType != 1 ? Color.fromARGB(255, 226, 226, 226) : Color.fromARGB(255, 101, 101, 101),
                       ),
                     ),
                     SizedBox(width: 5.0),
@@ -278,9 +203,7 @@ class _ChatMessageState extends State<ChatMessage> {
                       icon: Icon(
                         isPlaying ? Icons.volume_off : Icons.volume_up,
                         size: 20.0,
-                        color: widget.userType != 1
-                            ? Color.fromARGB(255, 226, 226, 226)
-                            : Color.fromARGB(255, 101, 101, 101),
+                        color: widget.userType != 1 ? Color.fromARGB(255, 226, 226, 226) : Color.fromARGB(255, 101, 101, 101),
                       ),
                       onPressed: _speakMessage,
                     ),

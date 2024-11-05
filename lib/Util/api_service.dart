@@ -1,27 +1,27 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../config.dart'; 
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:3000/api/';
   final String? token;
 
   ApiService({this.token});
 
   Future<http.Response> get(String endpoint) async {
-    final response = await http.get(Uri.parse(baseUrl + endpoint), headers: _headers());
+    final response = await http.get(Uri.parse('${Config.apiUrl}/$endpoint'), headers: _headers());
     _handleResponse(response);
     return response;
   }
 
   Future<http.Response> getList(String endpoint) async {
-    final response = await http.get(Uri.parse(baseUrl + endpoint), headers: _headers());
+    final response = await http.get(Uri.parse('${Config.apiUrl}/$endpoint'), headers: _headers());
     _handleResponse(response);
     return response;
   }
 
   Future<http.Response> post(String endpoint, Map<String, dynamic> data) async {
     final response = await http.post(
-      Uri.parse(baseUrl + endpoint),
+      Uri.parse('${Config.apiUrl}/$endpoint'),
       headers: _headers(),
       body: jsonEncode(data),
     );
@@ -31,7 +31,7 @@ class ApiService {
 
   Future<http.Response> patch(String endpoint, Map<String, dynamic> data) async {
     final response = await http.patch(
-      Uri.parse(baseUrl + endpoint),
+      Uri.parse('${Config.apiUrl}/$endpoint'),
       headers: _headers(),
       body: jsonEncode(data),
     );
@@ -40,7 +40,7 @@ class ApiService {
   }
 
   Future<http.Response> delete(String endpoint) async {
-    final response = await http.delete(Uri.parse(baseUrl + endpoint), headers: _headers());
+    final response = await http.delete(Uri.parse('${Config.apiUrl}/$endpoint'), headers: _headers());
     _handleResponse(response);
     return response;
   }

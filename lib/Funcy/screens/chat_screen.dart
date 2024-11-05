@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../widgets/chat_message.dart';
 import '../widgets/chat_box_footer.dart';
 import '../widgets/custom_app_bar.dart';
+import '../../config.dart'; // Importa el archivo de configuración
 
 class ChatScreen extends StatefulWidget {
   final int userId;
@@ -28,7 +29,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _fetchMessages(); 
+    _fetchMessages();
   }
 
   @override
@@ -38,6 +39,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _onScroll() {
+    _scrollOffset = _scrollController.offset;
     if (_scrollController.position.pixels ==
             _scrollController.position.maxScrollExtent &&
         !_loadingMore) {
@@ -45,15 +47,14 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-Future<void> _fetchMessages({bool isLoadMore = false}) async {
+  Future<void> _fetchMessages({bool isLoadMore = false}) async {
     if (isLoadMore) {
       setState(() {
         _loadingMore = true;
       });
     }
 
-    final url = Uri.parse(
-        'http://localhost:3000/api/messages/filtered?userId=${widget.userId}&limit=$_limit&offset=$_offset');
+    final url = Uri.parse('${Config.apiUrl}/messages/filtered?userId=${widget.userId}&limit=$_limit&offset=$_offset');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -95,15 +96,13 @@ Future<void> _fetchMessages({bool isLoadMore = false}) async {
     }
   }
 
-    Future<void> _loadMoreMessages() async {
-    // Evitar cargar más si ya estamos en proceso de cargar
+  Future<void> _loadMoreMessages() async {
     if (_loadingMore) return;
     await _fetchMessages(isLoadMore: true);
   }
 
-
   Future<void> _sendMessage(String text) async {
-    final url = Uri.parse('http://localhost:3000/api/guardarMensaje');
+    final url = Uri.parse('${Config.apiUrl}/guardarMensaje'); // Usar Config.apiUrl
     try {
       final response = await http.post(
         url,
@@ -145,139 +144,131 @@ Future<void> _fetchMessages({bool isLoadMore = false}) async {
   }
 
   Future<void> _getBotResponse(String userMessage) async {
-  if (userMessage == null || userMessage.isEmpty) {
-    print('Mensaje del usuario es nulo o vacío');
-    return;
-  }
+    if (userMessage.isEmpty) {
+      print('Mensaje del usuario es nulo o vacío');
+      return;
+    }
 
-  // Crear el historial de chat actual
-  final List<Map<String, dynamic>> chatHistory = messages.map((msg) {
-    return {
-      'role': msg['user_id'] == widget.userId ? 'user' : 'assistant',
-      'content': msg['text']
-    };
-  }).toList();
+    final List<Map<String, dynamic>> chatHistory = messages.map((msg) {
+      return {
+        'role': msg['user_id'] == widget.userId ? 'user' : 'assistant',
+        'content': msg['text']
+      };
+    }).toList();
 
-  final url = Uri.parse('http://localhost:3000/api/ask');
-  try {
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        'prompt': userMessage,
-        'userId': widget.userId,
-        'chatHistory': chatHistory // Enviar el historial de chat actual
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      final botMessage = responseData['response']?.toString().trim() ?? '';
-
-      final saveBotMessageResponse = await http.post(
-        Uri.parse('http://localhost:3000/api/guardarMensajeFromBot'),
+    final url = Uri.parse('${Config.apiUrl}/ask'); // Usar Config.apiUrl
+    try {
+      final response = await http.post(
+        url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          'content': botMessage,
+          'prompt': userMessage,
           'userId': widget.userId,
+          'chatHistory': chatHistory
         }),
       );
 
-      if (saveBotMessageResponse.statusCode == 201) {
-        final responseData = json.decode(saveBotMessageResponse.body);
-        setState(() {
-          messages.insert(
-            0,
-            {
-              'id': responseData['id']?.toString() ?? '',
-              'text': botMessage,
-              'time': DateFormat('HH:mm').format(DateTime.now()),
-              'user_id': 1,
-              'created_at': responseData['created_at'] ?? '',
-            },
-          );
-        });
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        final botMessage = responseData['response']?.toString().trim() ?? '';
 
-        _scrollController.animateTo(
-          0.0,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeOut,
+        final saveBotMessageResponse = await http.post(
+          Uri.parse('${Config.apiUrl}/guardarMensajeFromBot'), // Usar Config.apiUrl
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'content': botMessage,
+            'userId': widget.userId,
+          }),
         );
+
+        if (saveBotMessageResponse.statusCode == 201) {
+          final responseData = json.decode(saveBotMessageResponse.body);
+          setState(() {
+            messages.insert(
+              0,
+              {
+                'id': responseData['id']?.toString() ?? '',
+                'text': botMessage,
+                'time': DateFormat('HH:mm').format(DateTime.now()),
+                'user_id': 1,
+                'created_at': responseData['created_at'] ?? '',
+              },
+            );
+          });
+
+          _scrollController.animateTo(
+            0.0,
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        } else {
+          print('Error al guardar el mensaje del bot: ${saveBotMessageResponse.statusCode}');
+        }
       } else {
-        print('Error al guardar el mensaje del bot: ${saveBotMessageResponse.statusCode}');
+        print('Error al obtener respuesta del bot: ${response.statusCode}');
+        print('Respuesta del servidor: ${response.body}');
       }
-    } else {
-      print('Error al obtener respuesta del bot: ${response.statusCode}');
-      print('Respuesta del servidor: ${response.body}');
-    }
-  } catch (error) {
-    print('Error en la solicitud HTTP: $error');
-  }
-}
-
-
-  Color _getAppBarColor() {
-    if (_scrollOffset > 100) { // Ajusta este valor según sea necesario
-      return Colors.white;
-    } else {
-      return Colors.white; // Color original del AppBar
+    } catch (error) {
+      print('Error en la solicitud HTTP: $error');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Fondo blanco puro para toda la página
-      appBar: CustomAppBar(
-        scrollOffset: _scrollOffset,
-        backgroundColor: _getAppBarColor(),
-      ),
-      body: NotificationListener<ScrollNotification>(
-        onNotification: (scrollNotification) {
-          if (scrollNotification is ScrollUpdateNotification) {
-            setState(() {
-              _scrollOffset = _scrollController.offset;
-            });
-          }
-          return true;
-        },
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                reverse: true,
-                cacheExtent: 1000,
-                itemCount: messages.length,
-                itemBuilder: (context, index) {
-                  final text = messages[index]['text'] ?? '';
-                  final time = messages[index]['time'] ?? '';
-                  final user_id = messages[index]['user_id'] ?? '';
+      body: Column(
+        children: [
+          CustomAppBar(
+            scrollOffset: _scrollOffset,
+            backgroundColor: Colors.white, // Fondo blanco sólido
+          ),
+          Expanded(
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Image.asset(
+                    'assets/fondoFNL.jpg',
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        reverse: true,
+                        cacheExtent: 1000,
+                        itemCount: messages.length,
+                        itemBuilder: (context, index) {
+                          final text = messages[index]['text'] ?? '';
+                          final time = messages[index]['time'] ?? '';
+                          final user_id = messages[index]['user_id'] ?? '';
 
-                  final userType = user_id == widget.userId ? user_id : 1;
+                          final userType = user_id == widget.userId ? user_id : 1;
 
-                  return ChatMessage(
-                    key: ValueKey(messages[index]['id']), 
-                    message: text,
-                    time: time,
-                    userId: user_id,
-                    userType: userType,
-                    );
-
-                },
-              ),
+                          return ChatMessage(
+                            key: ValueKey(messages[index]['id']),
+                            message: text,
+                            time: time,
+                            userId: user_id,
+                            userType: userType,
+                          );
+                        },
+                      ),
+                    ),
+                    ChatBoxFooter(
+                      textEditingController: _controller,
+                      onSendMessage: (text) {
+                        _sendMessage(text);
+                        _controller.clear();
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ),
-            ChatBoxFooter(
-              textEditingController: _controller,
-              onSendMessage: (text) {
-                _sendMessage(text);
-                _controller.clear();
-              },
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

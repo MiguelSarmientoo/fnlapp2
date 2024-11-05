@@ -35,6 +35,10 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
+  lottie: ^3.1.3
+  image_picker: ^1.1.2
+  permission_handler: ^11.3.1
+  universal_platform: ^1.1.0
 
 dev_dependencies:
   flutter_test:
@@ -74,7 +78,40 @@ flutter:
   uses-material-design: true
 
   assets:
+<<<<<<< HEAD
     - assets/
+=======
+    - assets/login.png
+    - assets/logo.png
+    - assets/fondoFNL.jpg
+    - assets/home.png
+    - assets/chat.png
+    - assets/profile.png
+    - assets/icon/divisor.png
+    - assets/logos/fnl.png
+    - assets/testestres/estresimg.png
+    - assets/testestres/pregunta01.jpeg
+    - assets/testestres/pregunta02.png
+    - assets/testestres/pregunta03.png
+    - assets/testestres/pregunta04.png
+    - assets/testestres/pregunta05.png
+    - assets/testestres/pregunta06.png
+    - assets/testestres/pregunta07.png
+    - assets/testestres/pregunta08.png
+    - assets/testestres/pregunta09.png
+    - assets/testestres/pregunta10.png
+    - assets/fondosplash.png
+    - assets/logo_funcy_btn.png
+    - assets/logo_funcy_splash.png
+    - assets/logo_funcy_scale.png
+    - assets/user_img.jpg
+    - assets/imgstecnicas/respiracion7.png
+    - assets/imgstecnicas/respiracion7_2.png
+    - assets/imgstecnicas/respiracion7_3.png
+    - assets/lottie/avatar_mujer.json
+    - assets/lottie/avatar_hombre.json
+
+>>>>>>> 9d78bfb713f4c2f1715130e7156a02ac99cc5f04
 
   # To add assets to your application, add an assets section, like this:
   # assets:

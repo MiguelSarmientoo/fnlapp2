@@ -20,7 +20,7 @@ class MiTestScreen extends StatelessWidget {
         imagePath = 'assets/severo2.png';
         break;
       default:
-        imagePath = 'assets/fondoFNL.png'; 
+        imagePath = 'assets/fondoFNL.jpg'; 
     }
 
     return Scaffold(

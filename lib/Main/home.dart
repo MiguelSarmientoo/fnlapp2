@@ -12,7 +12,7 @@ import '../Main/widgets/custom_navigation_bar.dart';
 import 'plan.dart';
 import './widgets/chat_widget.dart';
 import 'mitest.dart';
-import './ExitTest/exit_test_screen.dart'; // Importa la pantalla del Test de Salida
+import './ExitTest/exit_test_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override

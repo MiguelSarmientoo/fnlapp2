@@ -10,12 +10,20 @@ class ProfileData {
   });
 
   factory ProfileData.fromJson(Map<String, dynamic> json) {
+    // Verifica si el perfil de la imagen es una URL completa o solo una ruta
+    String? profileImagePath = json['profileImage'];
+    if (profileImagePath != null && !profileImagePath.startsWith('http')) {
+      // Construye la URL completa si es necesario (ajusta la URL base a tu entorno)
+      profileImagePath = 'http://localhost:3000/' + profileImagePath.replaceAll('\\', '/');
+    }
+
     return ProfileData(
-      email: json['User']['email'],
-      hierarchicalLevel: json['HierarchicalLevel']['level'],
-      profileImage: json['User']['profileImage'],
+      email: json['email'],
+      hierarchicalLevel: json['funcyinteract'].toString(),
+      profileImage: profileImagePath,
     );
   }
+
   @override
   String toString() {
     return 'ProfileData{profileImage: $profileImage, hierarchicalLevel: $hierarchicalLevel, email: $email}';

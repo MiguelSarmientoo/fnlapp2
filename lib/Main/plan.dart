@@ -201,13 +201,21 @@ Widget build(BuildContext context) {
         .record_voice_over, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
   };
 
-  Widget _buildProgramaWidget(dynamic programa, BuildContext context) {
-    IconData iconoPrograma = iconMapping[programa['tecnica']['icon']] ?? Icons.self_improvement;
+Widget _buildProgramaWidget(dynamic programa, BuildContext context) {
+  // Verifica que 'tecnica' no sea null
+  if (programa['tecnica'] == null) {
+    return Container(); // O muestra un widget de error/placeholder
+  }
 
-    // Definir los colores por rango de días
-    Color backgroundColor;
-    Color iconColor;
-    Color textColor;
+  // Añadir logs para depurar
+  print('Programa ID: ${programa['id']}');
+  print('Técnica: ${programa['tecnica']['nombre']}');
+  
+  IconData iconoPrograma = iconMapping[programa['tecnica']['icon']] ?? Icons.self_improvement;
+
+  Color backgroundColor;
+  Color iconColor;
+  Color textColor;
 
   // Establecer colores dependiendo del tipo de terapia
   if ((programa['tecnica']['id'] >= 7 && programa['tecnica']['id'] <= 10) ||
@@ -252,202 +260,150 @@ Widget build(BuildContext context) {
     iconColor = Color(0xFF44DEE8); // Azul para el ícono
     textColor = Color(0xFF44DEE8); // Azul para el texto
   }
-  
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment
-            .start, // Asegura que la sección del día y el contenedor blanco estén alineados correctamente
-        children: [
-          // Sección para el Día y la barra
-          SizedBox(
-            width: 55, // Ancho fijo para la sección del Día
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'Día',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14.0,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.black,
-                  ),
-                ),
-                Text(
-                  programa['dia']
-                      .toString()
-                      .padLeft(2, '0'), // Día desde el API
-                  style: GoogleFonts.poppins(
-                    fontSize: 34.0,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black,
-                  ),
-                ),
-                Container(
-                  // Eliminamos Expanded para evitar problemas de restricciones no acotadas
-                  height: 40, // Ajusta el tamaño según necesites
-                  width: 3,
-                  color: const Color.fromARGB(
-                      255, 255, 255, 255), // Línea divisoria blanca
-                ),
-              ],
-            ),
-          ),
-          SizedBox(
-              width:
-                  16), // Espacio entre la sección del Día y el contenedor blanco
 
-// Contenedor del programa
-Expanded(
-  child: Container(
-    width: 350, // Establecer un ancho definido
-    margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0), // Margen para separar de otros elementos
-    padding: EdgeInsets.all(16.0),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12.0),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(0.3),
-          spreadRadius: 2,
-          blurRadius: 6,
-          offset: Offset(0, 3),
-        ),
-      ],
-    ),
-    child: Column(
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+    child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Título del programa
-        Text(
-          programa['tecnica']['nombre'], // Nombre del programa
-          style: GoogleFonts.poppins(
-            fontSize: 16.0,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
+        SizedBox(
+          width: 55,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'Día',
+                style: GoogleFonts.poppins(fontSize: 14.0, fontWeight: FontWeight.w400, color: Colors.black),
+              ),
+              Text(
+                programa['dia'].toString().padLeft(2, '0'),
+                style: GoogleFonts.poppins(fontSize: 34.0, fontWeight: FontWeight.w500, color: Colors.black),
+              ),
+              Container(
+                height: 40,
+                width: 3,
+                color: const Color.fromARGB(255, 255, 255, 255),
+              ),
+            ],
           ),
         ),
-        SizedBox(height: 8),
-        // Fila con descripción y el botón de play
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Flexible(
-              child: Text(
-                programa['tecnica']['mensaje'] ?? '', // Descripción del programa
-                style: GoogleFonts.poppins(
-                  fontSize: 14.0,
-                  color: Colors.black87,
-                ),
-              ),
-            ),
-            // Botón de play centrado
-            GestureDetector(
-              onTap: () {
-                dynamic stepsData = programa['tecnica']['steps'];
-                List<dynamic> steps;
-
-                // Verifica si 'steps' es un string JSON o una lista
-                if (stepsData is String) {
-                  steps = json.decode(stepsData); // Decodifica si es una cadena JSON
-                } else {
-                  steps = stepsData; // Usa la lista directamente
-                }
-
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => StepScreen(
-                      steps: steps, // Pasa los pasos
-                      tecnicaNombre: programa['tecnica']['nombre'], // Pasa el nombre de la técnica
-                      dia: programa['dia'], // Pasa el día
-                      userId: programa['user_id'], // Pasa el user_id
-                      tecnicaId: programa['tecnica']['id'], // Pasa el tecnica_id
-                    ),
-                  ),
-                );
-              },
-              child: CircleAvatar(
-                backgroundColor: Color.fromARGB(255, 237, 221, 255),
-                radius: 24,
-                child: Icon(
-                  Icons.play_arrow,
-                  size: 28,
-                  color: Color.fromARGB(255, 75, 21, 141),
-                ),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 12),
-        // Fila con audífono + check y el botón tipo
-        Row(
-          children: [
-            // Audífono con check superpuesto
-            Stack(
-              clipBehavior: Clip.none, // Permitir que los elementos se dibujen fuera de los límites del Stack
-              children: [
-                CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 240, 240, 240),
-                  radius: 15, // Aumentamos un poco el tamaño del círculo base
-                  child: Icon(
-                    Icons.headset, // Ícono de audífono
-                    color: Color.fromARGB(255, 103, 21, 141),
-                    size: 18,
-                  ),
-                ),
-                Positioned(
-                  top: -4, // Ajustamos la posición hacia arriba para que quede en la esquina
-                  right: -4, // Ajustamos a la derecha
-                  child: CircleAvatar(
-                    backgroundColor: Colors.green,
-                    radius: 8, // Aumentamos el radio para que el círculo del check sea visible
-                    child: Icon(
-                      Icons.check,
-                      color: Colors.white,
-                      size: 9, // Tamaño adecuado del ícono check dentro del círculo
-                    ),
-                  ),
+        SizedBox(width: 16),
+        Expanded(
+          child: Container(
+            width: 350,
+            margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+            padding: EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.3),
+                  spreadRadius: 2,
+                  blurRadius: 6,
+                  offset: Offset(0, 3),
                 ),
               ],
             ),
-            SizedBox(width: 6),
-            // Botón tipo Chip con el tipo de programa
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                borderRadius: BorderRadius.circular(20.0),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    iconoPrograma,
-                    size: 18,
-                    color: iconColor,
-                  ),
-                  SizedBox(width: 6),
-                  Text(
-                    programa['tecnica']['tipo'],
-                    style: GoogleFonts.poppins(
-                      fontSize: 13.0,
-                      fontWeight: FontWeight.w500,
-                      color: textColor,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  programa['tecnica']['nombre'] ?? 'Sin nombre',
+                  style: GoogleFonts.poppins(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.black),
+                ),
+                SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        programa['tecnica']['mensaje'] ?? '',
+                        style: GoogleFonts.poppins(fontSize: 14.0, color: Colors.black87),
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                    GestureDetector(
+                      onTap: () {
+                        dynamic stepsData = programa['tecnica']['steps'];
+                        List<dynamic> steps;
+
+                        if (stepsData is String) {
+                          steps = json.decode(stepsData); 
+                        } else {
+                          steps = stepsData;
+                        }
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => StepScreen(
+                              steps: steps,
+                              tecnicaNombre: programa['tecnica']['nombre'],
+                              dia: programa['dia'],
+                              userId: programa['user_id'],
+                              tecnicaId: programa['tecnica']['id'],
+                            ),
+                          ),
+                        );
+                      },
+                      child: CircleAvatar(
+                        backgroundColor: Color.fromARGB(255, 237, 221, 255),
+                        radius: 24,
+                        child: Icon(Icons.play_arrow, size: 28, color: Color.fromARGB(255, 75, 21, 141)),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: Color.fromARGB(255, 240, 240, 240),
+                          radius: 15,
+                          child: Icon(Icons.headset, color: Color.fromARGB(255, 103, 21, 141), size: 18),
+                        ),
+                        Positioned(
+                          top: -4,
+                          right: -4,
+                          child: CircleAvatar(
+                            backgroundColor: Colors.green,
+                            radius: 8,
+                            child: Icon(Icons.check, color: Colors.white, size: 9),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(width: 6),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                      decoration: BoxDecoration(
+                        color: backgroundColor,
+                        borderRadius: BorderRadius.circular(20.0),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(iconoPrograma, color: iconColor, size: 18),
+                          SizedBox(width: 4),
+                          Text(
+                            'Técnica',
+                            style: GoogleFonts.poppins(fontSize: 12.0, fontWeight: FontWeight.w400, color: textColor),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ],
     ),
-  ),
-),
-        ],
-      ),
-    );
-  }
+  );
+}
 }
 

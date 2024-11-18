@@ -7,9 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:fnlapp/SharedPreferences/sharedpreference.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fnlapp/config.dart'; // Agrega esto al inicio de tu archivo
-
-
+import 'package:fnlapp/config.dart'; 
 import '../Util/api_service.dart';
 import '../Util/carga.dart';
 import '../Util/style.dart'; 
@@ -224,10 +222,10 @@ class _IndexScreenState extends State<IndexScreen> {
     final String createdAt = dateFormat.format(DateTime.now());
 
     final Map<String, dynamic> dataToSend = {
-      "user_id": userId,  // Cambia esto según el usuario autenticado
-      "age_range_id": selectedAnswers[0],  // Asegúrate de que existan valores en selectedAnswers
+      "user_id": userId,  
+      "age_range_id": selectedAnswers[0],  
       "hierarchical_level_id": selectedAnswers[2],
-      "responsability_level_id": selectedAnswers[3],  // Verifica que selectedAnswers[3] no sea null
+      "responsability_level_id": selectedAnswers[3],  
       "gender_id": selectedAnswers[1],
       "created_at": createdAt,
     };
@@ -247,11 +245,10 @@ class _IndexScreenState extends State<IndexScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Respuestas guardadas exitosamente.')),
         );
-        // Navegar a HomeScreen y pasar el nivel de responsabilidad
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => TestEstresScreen(),  // Redirige a la nueva página
+            builder: (context) => TestEstresScreen(),  
           ),
         );
       } else {
@@ -452,87 +449,90 @@ class _IndexScreenState extends State<IndexScreen> {
 
 
 
-  Widget _buildQuestionsScreen() {
-    String currentCategoryKey;
+Widget _buildQuestionsScreen() {
+  String currentCategoryKey;
 
-    switch (currentQuestionIndex) {
-      case 0:
-        currentCategoryKey = 'age_range';
-        break;
-      case 1:
-        currentCategoryKey = 'gender';
-        break;
-      case 2:
-        currentCategoryKey = 'level';
-        break;
-      case 3:
-        currentCategoryKey = 'responsability_level';
-        break;
-      default:
-        currentCategoryKey = 'age_range';
-    }
+  // Selección de la categoría según el índice de la pregunta
+  switch (currentQuestionIndex) {
+    case 0:
+      currentCategoryKey = 'age_range';
+      break;
+    case 1:
+      currentCategoryKey = 'gender';
+      break;
+    case 2:
+      currentCategoryKey = 'level';
+      break;
+    case 3:
+      currentCategoryKey = 'responsability_level';
+      break;
+    default:
+      currentCategoryKey = 'age_range';
+  }
 
-    var currentCategoryQuestions = questionCategories[currentCategoryKey];
+  // Obtenemos las preguntas de la categoría actual
+  var currentCategoryQuestions = questionCategories[currentCategoryKey];
 
-    if (currentCategoryQuestions == null || currentCategoryQuestions.isEmpty) {
-      return Center(
-        child: Text("No se encontraron preguntas para esta categoría."),
-      );
-    }
+  // Si no hay preguntas disponibles, mostramos un mensaje
+  if (currentCategoryQuestions == null || currentCategoryQuestions.isEmpty) {
+    return Center(
+      child: Text("No se encontraron preguntas para esta categoría."),
+    );
+  }
 
-    // Definir el texto de la pregunta según el índice
-    String preguntaTexto = '';
-    switch (currentQuestionIndex) {
-      case 0:
-        preguntaTexto = '¿Cuál es tu rango de edad?';
-        break;
-      case 1:
-        preguntaTexto = '¿Cuál es tu género?';
-        break;
-      case 2:
-        preguntaTexto = '¿Cuál es tu posición en la organización?';
-        break;
-      case 3:
-        preguntaTexto = '¿Cuál es tu nivel de responsabilidad?';
-        break;
-    }
+  // Definir el texto de la pregunta según el índice
+  String preguntaTexto = '';
+  switch (currentQuestionIndex) {
+    case 0:
+      preguntaTexto = '¿Cuál es tu rango de edad?';
+      break;
+    case 1:
+      preguntaTexto = '¿Cuál es tu género?';
+      break;
+    case 2:
+      preguntaTexto = '¿Cuál es tu posición en la organización?';
+      break;
+    case 3:
+      preguntaTexto = '¿Cuál es tu nivel de responsabilidad?';
+      break;
+  }
 
-    return Column(
+  return Column(
     children: [
-      // Contenido en la parte superior, reducimos el espacio entre los elementos
+      // Contenido en la parte superior, con reducción de espacio
       Padding(
-        padding: const EdgeInsets.only(top: 40.0), // Reducimos el espacio superior
+        padding: const EdgeInsets.only(top: 40.0), // Espacio superior ajustado
         child: Column(
           children: [
             Text(
               'Pregunta ${currentQuestionIndex + 1} de 4',
               style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
             ),
-            if (currentQuestionIndex == 0) // Mostrar solo en la primera pregunta
+            if (currentQuestionIndex == 0) // Mensaje especial solo en la primera pregunta
               Padding(
-                padding: const EdgeInsets.only(top: 8.0),  // Reducimos el espacio adicional
+                padding: const EdgeInsets.only(top: 8.0),
                 child: Text(
                   'Te damos la bienvenida a FNL',
                   style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
               ),
-            SizedBox(height: 8.0),  // Reducimos el espacio entre los textos
+            SizedBox(height: 8.0), // Espacio entre los textos
             Text(
-              preguntaTexto,  // Texto dinámico según la pregunta
+              preguntaTexto, // Texto dinámico de la pregunta
               style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 10),  // Reducimos el espacio antes de las opciones
+            SizedBox(height: 10), // Espacio antes de las opciones
           ],
         ),
       ),
 
-      // Opciones centradas en el medio
+      // Opciones centradas en la pantalla
       Expanded(
         flex: 2,
         child: Center(
-          child: _buildQuestionField(currentCategoryQuestions),
+          child: _buildQuestionField(currentCategoryQuestions), // Campo de respuesta dinámico
         ),
       ),
 
@@ -542,16 +542,20 @@ class _IndexScreenState extends State<IndexScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            if (currentQuestionIndex > 0)
+            if (currentQuestionIndex > 0) // Botón de retroceso
               TextButton(
                 onPressed: goToPreviousQuestion,
-                child: Text('Volver', style: TextStyle(color: Color(0xFF5027D0),fontWeight: FontWeight.w600,)),
+                child: Text(
+                  'Volver',
+                  style: TextStyle(color: Color(0xFF5027D0), fontWeight: FontWeight.w600),
+                ),
               ),
             Spacer(),
+            // Botón de siguiente o finalización según el índice de pregunta
             TextButton(
               onPressed: currentQuestionIndex < 3
                   ? goToNextQuestion
-                  : saveResponses,  // Llamar a saveResponses cuando se pulse "Finalizar"
+                  : saveResponses, // Guardar respuestas si es la última pregunta
               child: Text(
                 currentQuestionIndex < 3 ? 'Siguiente' : 'Finalizar',
                 style: TextStyle(color: Color(0xFF5027D0), fontWeight: FontWeight.w600),

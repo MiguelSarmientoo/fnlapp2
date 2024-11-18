@@ -15,12 +15,14 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color.fromRGBO(240, 218, 250, 1),
-      body: Center( // Centrar el contenido en toda la pantalla
+      body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: profileData == null
               ? CircularProgressIndicator()
-              : _buildProfileInfo(),
+              : SingleChildScrollView(
+                  child: _buildProfileInfo(),
+                ),
         ),
       ),
     );
@@ -29,44 +31,48 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildProfileInfo() {
     return Container(
       constraints: BoxConstraints(
-        maxHeight: 300, // Altura máxima ajustada
-        maxWidth: 400, // Ancho máximo ajustado
+        maxWidth: 400,
       ),
       padding: EdgeInsets.all(20.0),
       decoration: BoxDecoration(
-        color: Colors.white, // Fondo blanco
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.3), // Sombras suaves
+            color: Colors.grey.withOpacity(0.3),
             spreadRadius: 3,
             blurRadius: 6,
-            offset: Offset(0, 3), // Desplazamiento de la sombra
+            offset: Offset(0, 3),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center, // Alinear al centro
-        mainAxisSize: MainAxisSize.min, // Ajustar el tamaño vertical
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           CircleAvatar(
             radius: 50,
             backgroundColor: Colors.grey[200],
-            child: Icon(
-              Icons.account_circle,
-              size: 50,
-              color: Color(0xFF5027D0), // Color del ícono
-            ),
+            backgroundImage: profileData?.profileImage != null
+                ? NetworkImage(profileData!.profileImage!)
+                : null,
+            child: profileData?.profileImage == null
+                ? Icon(
+                    Icons.account_circle,
+                    size: 50,
+                    color: Color(0xFF5027D0),
+                  )
+                : null,
           ),
           SizedBox(height: 15),
           _buildProfileDetails(),
           SizedBox(height: 20),
           _buildLogoutButton(),
-          SizedBox(height: 8), // Espaciado ajustado
+          SizedBox(height: 8),
           Text(
             'Versión: 1.0.0',
             style: GoogleFonts.poppins(
-              fontSize: 12.0, // Tamaño de fuente reducido
+              fontSize: 12.0,
               color: Colors.grey[600],
             ),
           ),
@@ -77,14 +83,14 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _buildProfileDetails() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center, // Alinear al centro
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           profileData?.email ?? '',
           style: GoogleFonts.poppins(
             fontSize: 20.0,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF5027D0), // Color del texto en morado
+            color: Color(0xFF5027D0),
           ),
         ),
         Text(
@@ -103,13 +109,13 @@ class ProfileScreen extends StatelessWidget {
       onPressed: () => onLogout(),
       child: Text('Cerrar sesión'),
       style: ElevatedButton.styleFrom(
-        backgroundColor: Color(0xFF5027D0), // Color morado
-        foregroundColor: Colors.white, // Color del texto
-        padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Mejor padding
+        backgroundColor: Color(0xFF5027D0),
+        foregroundColor: Colors.white,
+        padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30),
         ),
-        elevation: 4, // Sombra del botón
+        elevation: 4,
       ),
     );
   }

@@ -23,9 +23,9 @@ class _CargarProgramaScreenState extends State<CargarProgramaScreen> {
 
   // Función para iniciar el progreso
   void _startLoading() {
-    Timer.periodic(Duration(milliseconds: 200), (timer) {  // Cambiado a 100 milisegundos
+    Timer.periodic(Duration(milliseconds: 1200), (timer) {  // Cambiado a 1200 milisegundos (1.2 segundos)
       setState(() {
-        _progress += 1;  // Incrementa en 1 cada 100ms
+        _progress += 1;  // Incrementa en 1 cada 1.2 segundos
         if (_progress >= 100) {
           timer.cancel();  // Detiene el temporizador cuando el progreso llega al 100%
           setState(() {
@@ -37,9 +37,8 @@ class _CargarProgramaScreenState extends State<CargarProgramaScreen> {
     });
   }
 
-
- // Función que redirige a la pantalla de inicio después de un retraso
-    void _goToHome() {
+  // Función que redirige a la pantalla de inicio después de un retraso
+  void _goToHome() {
     Future.delayed(Duration(seconds: 2), () {
       // Redirige a la pantalla principal (HomeScreen)
       Navigator.pushReplacement(
@@ -50,6 +49,7 @@ class _CargarProgramaScreenState extends State<CargarProgramaScreen> {
       );
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

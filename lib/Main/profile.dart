@@ -14,7 +14,16 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromRGBO(240, 218, 250, 1),
+      backgroundColor: Color(0xFFF7F2FA), // Color de fondo suave
+      appBar: AppBar(
+        backgroundColor: Color(0xFF5027D0),
+        title: Text(
+          'Perfil',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
+        centerTitle: true,
+        elevation: 2,
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -30,19 +39,16 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _buildProfileInfo() {
     return Container(
-      constraints: BoxConstraints(
-        maxWidth: 400,
-      ),
+      constraints: BoxConstraints(maxWidth: 400),
       padding: EdgeInsets.all(20.0),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(16.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            spreadRadius: 3,
-            blurRadius: 6,
-            offset: Offset(0, 3),
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 10,
+            offset: Offset(0, 5),
           ),
         ],
       ),
@@ -59,16 +65,22 @@ class ProfileScreen extends StatelessWidget {
             child: profileData?.profileImage == null
                 ? Icon(
                     Icons.account_circle,
-                    size: 50,
+                    size: 60,
                     color: Color(0xFF5027D0),
                   )
                 : null,
           ),
-          SizedBox(height: 15),
+          SizedBox(height: 20),
           _buildProfileDetails(),
+          Divider(
+            height: 30,
+            thickness: 1,
+            color: Colors.grey[300],
+          ),
+          _buildAdditionalInfo(),
           SizedBox(height: 20),
           _buildLogoutButton(),
-          SizedBox(height: 8),
+          SizedBox(height: 12),
           Text(
             'Versión: 1.0.0',
             style: GoogleFonts.poppins(
@@ -93,12 +105,55 @@ class ProfileScreen extends StatelessWidget {
             color: Color(0xFF5027D0),
           ),
         ),
-        Text(
-          profileData?.hierarchicalLevel ?? '',
-          style: GoogleFonts.poppins(
-            fontSize: 16.0,
-            color: Colors.grey[600],
-          ),
+        SizedBox(height: 8),
+      ],
+    );
+  }
+
+  Widget _buildAdditionalInfo() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Correo:',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
+                fontSize: 16.0,
+                color: Colors.grey[700],
+              ),
+            ),
+            Text(
+              profileData?.email ?? 'No disponible',
+              style: GoogleFonts.poppins(
+                fontSize: 16.0,
+                color: Colors.grey[800],
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Nivel jerárquico:',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
+                fontSize: 16.0,
+                color: Colors.grey[700],
+              ),
+            ),
+            Text(
+              profileData?.hierarchicalLevel ?? 'No disponible',
+              style: GoogleFonts.poppins(
+                fontSize: 16.0,
+                color: Colors.grey[800],
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -107,15 +162,18 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildLogoutButton() {
     return ElevatedButton(
       onPressed: () => onLogout(),
-      child: Text('Cerrar sesión'),
+      child: Text(
+        'Cerrar sesión',
+        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+      ),
       style: ElevatedButton.styleFrom(
         backgroundColor: Color(0xFF5027D0),
         foregroundColor: Colors.white,
-        padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+        padding: EdgeInsets.symmetric(horizontal: 40, vertical: 14),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(25),
         ),
-        elevation: 4,
+        elevation: 6,
       ),
     );
   }

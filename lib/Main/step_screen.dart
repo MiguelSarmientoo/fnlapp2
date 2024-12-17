@@ -3,9 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:fnlapp/Main/finalstepscreen.dart';
+import 'dart:convert';  // Para usar json.decode
 
 class StepScreen extends StatefulWidget {
-  final List<dynamic> steps; // Lista de pasos a mostrar
+  final List<String> steps; // Recibir la lista de pasos como un JSON
   final String tecnicaNombre; // Nombre de la técnica
   final int dia; // Número del día
   final int userId; // Nuevo: user_id
@@ -30,9 +31,14 @@ class _StepScreenState extends State<StepScreen> {
   TextEditingController commentController = TextEditingController(); // Controlador del input de comentario
   double _rating = 0; // Valor inicial para el rating de estrellas
 
-  bool isImageStep(int index) {
-    // Las posiciones pares (0, 2, 4...) son mensajes y las impares (1, 3, 5...) son imágenes
-    return index % 2 != 0;
+  // No es necesario declarar steps aquí, ya que widget.steps es directamente la lista
+  // List<dynamic> steps = []; // Lista de pasos decodificados del JSON
+
+  @override
+  void initState() {
+    super.initState();
+    // No es necesario decodificar, ya que widget.steps ya es una lista
+    // steps = json.decode(widget.steps); // Elimina esta línea
   }
 
   // Función para leer el texto
@@ -70,8 +76,7 @@ class _StepScreenState extends State<StepScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Se define el número máximo de vistas (6 para los pasos + 1 para la vista del comentario)
-    int maxSteps = widget.steps.length * 2;
+    int maxSteps = widget.steps.length; // Usar widget.steps directamente
 
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 3, 12, 12), // Color de fondo oscuro
@@ -93,35 +98,21 @@ class _StepScreenState extends State<StepScreen> {
       body: Container(
         child: Stack(
           children: [
-            if (isImageStep(currentStep) && currentStep < maxSteps) // Solo mostrar el fondo si es un paso de imagen
-              Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(widget.steps[currentStep ~/ 2]['linkimg']), // Imagen de fondo
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                child: Container(
-                  color: Colors.black.withOpacity(0.3), // Agrega el sombreado (30% de opacidad)
-                ),
-              ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Texto o imagen en la parte central
+                  // Texto en el centro de la pantalla
                   Expanded(
                     child: Center(
                       child: currentStep < maxSteps
-                          ? isImageStep(currentStep)
-                              ? Container() // No mostrar nada en el centro cuando sea imagen (ya es el fondo)
-                              : Text(
-                                  widget.steps[currentStep ~/ 2]['message'],
-                                  style: GoogleFonts.poppins(
-                                      fontSize: 22.0, color: Colors.white, height: 1.5),
-                                  textAlign: TextAlign.center,
-                                )
+                          ? Text(
+                              widget.steps[currentStep],  // Usar widget.steps en lugar de steps
+                              style: GoogleFonts.poppins(
+                                  fontSize: 22.0, color: Colors.white, height: 1.5),
+                              textAlign: TextAlign.center,
+                            )
                           : Container(), // Evita error si intentamos acceder a una vista más allá de los steps
                     ),
                   ),
@@ -243,9 +234,12 @@ class _StepScreenState extends State<StepScreen> {
                             child: IconButton(
                               icon: Icon(Icons.skip_next, color: Colors.white),
                               iconSize: 28, // Tamaño del ícono ajustado
-                              onPressed: () {
-                                if (currentStep == 5) {
-                                  // Ir a la nueva vista cuando sea el último paso
+                            onPressed: () {
+                              setState(() {
+                                if (currentStep < maxSteps - 1) {
+                                  currentStep++;
+                                } else {
+                                  // Ir a la pantalla de retroalimentación
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -255,34 +249,30 @@ class _StepScreenState extends State<StepScreen> {
                                       ),
                                     ),
                                   );
-                                } else {
-                                  setState(() {
-                                    currentStep++;
-                                  });
                                 }
-                              },
-                            ),
+                              });
+                            },
                           ),
+                        ),
                         SizedBox(width: 20), // Separador
-                        // Botón de audio (solo cuando sea un mensaje)
-                        if (!isImageStep(currentStep))
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Color.fromARGB(255, 75, 21, 141), // Fondo circular
-                              shape: BoxShape.circle,
-                            ),
-                            child: IconButton(
-                              icon: Icon(isPlaying ? Icons.stop : Icons.volume_up, color: Colors.white),
-                              iconSize: 28, // Tamaño del ícono ajustado
-                              onPressed: () {
-                                if (isPlaying) {
-                                  _stop(); // Detiene la lectura
-                                } else {
-                                  _speak(widget.steps[currentStep ~/ 2]['message']); // Lee el texto
-                                }
-                              },
-                            ),
+                        // Botón de audio (opcional para leer el texto en voz alta)
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Color.fromARGB(255, 75, 21, 141), // Fondo circular
+                            shape: BoxShape.circle,
                           ),
+                          child: IconButton(
+                            icon: Icon(isPlaying ? Icons.stop : Icons.volume_up, color: Colors.white),
+                            iconSize: 28, // Tamaño del ícono ajustado
+                            onPressed: () {
+                              if (isPlaying) {
+                                _stop();
+                              } else {
+                                _speak(widget.steps[currentStep]); // Lee el paso actual
+                              }
+                            },
+                          ),
+                        ),
                       ],
                     ),
                 ],
@@ -294,3 +284,4 @@ class _StepScreenState extends State<StepScreen> {
     );
   }
 }
+

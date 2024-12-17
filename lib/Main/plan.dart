@@ -77,189 +77,49 @@ Widget build(BuildContext context) {
 }
 
 
-  Map<String, IconData> iconMapping = {
-    "air": Icons.air, // Para Técnicas de Relajación
-    "self_improvement": Icons.self_improvement, // Para Musicoterapia
-    "spa": Icons.spa,
-    "visibility": Icons.visibility, // Para Aromaterapia
-    "healing": Icons.healing, // Para Musicoterapia
-    "psychology": Icons.psychology, // Para Relajación Muscular Progresiva
-    "music_note":
-        Icons.music_note, // Para Técnicas de Visualización (El Molino)
-    "emoji_nature": Icons
-        .emoji_nature, // Para Técnicas Cognitivas (Pensamientos Polarizados)
-    "wb_sunny": Icons
-        .wb_sunny, // Para Técnicas Cognitivas (Interpretación del Pensamiento)
-    "directions_walk": Icons
-        .directions_walk, // Para Técnicas Cognitivas (Razonamiento Emocional)
-    "nature": Icons.nature, // Para Técnicas Cognitivas (Etiquetas Globales)
-    "fitness_center":
-        Icons.fitness_center, // Para Técnicas Cognitivas (Culpabilidad)
-    "bathtub": Icons
-        .bathtub, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "do_not_disturb": Icons
-        .do_not_disturb, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "airline_seat_flat": Icons
-        .airline_seat_flat, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "mood": Icons
-        .mood, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "water": Icons
-        .water, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "motion_photos_pause": Icons
-        .motion_photos_pause, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "note": Icons
-        .note, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "question_answer": Icons
-        .question_answer, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "transform": Icons
-        .transform, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "shuffle": Icons
-        .shuffle, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "calculate": Icons
-        .calculate, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "theater_comedy": Icons
-        .theater_comedy, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "arrow_downward": Icons
-        .arrow_downward, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "loop": Icons
-        .loop, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "thumb_up": Icons
-        .thumb_up, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "swap_horiz": Icons
-        .swap_horiz, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "table_chart": Icons
-        .table_chart, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "block": Icons
-        .block, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "favorite": Icons
-        .favorite, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "chat": Icons
-        .chat, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "stop_circle": Icons
-        .stop_circle, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "emoji_events": Icons
-        .emoji_events, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "account_box": Icons
-        .account_box, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "fact_check": Icons
-        .fact_check, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "problem_solving": Icons
-        .visibility, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "style": Icons
-        .style, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "control_camera": Icons
-        .control_camera, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "mail": Icons
-        .mail, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "help_outline": Icons
-        .help_outline, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "anchor": Icons
-        .anchor, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "tune": Icons
-        .tune, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "compare_arrows": Icons
-        .compare_arrows, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "sync_alt": Icons
-        .sync_alt, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "people": Icons
-        .people, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "school": Icons
-        .school, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "timeline": Icons
-        .timeline, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "mirror": Icons
-        .fact_check, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "breakfast_dining": Icons
-        .breakfast_dining, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "flip": Icons
-        .flip, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "anchor_off": Icons
-        .calculate, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "change_circle": Icons
-        .change_circle, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "circle": Icons
-        .circle, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "security": Icons
-        .security, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "groups": Icons
-        .groups, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "thumb_up_alt": Icons
-        .thumb_up_alt, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "link": Icons
-        .link, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "theaters": Icons
-        .theaters, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "autorenew": Icons
-        .autorenew, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "visibility_off": Icons
-        .visibility_off, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "target": Icons
-        .transform, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "emoji_emotions": Icons
-        .emoji_emotions, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-    "record_voice_over": Icons
-        .record_voice_over, // Para Terapias Laborales (Falacia de Razón en el Entorno Laboral)
-  };
-
 Widget _buildProgramaWidget(dynamic programa, BuildContext context) {
+  print('Contenido de programa: ${jsonEncode(programa)}');
   // Verifica que 'tecnica' no sea null
-  if (programa['tecnica'] == null) {
+  if (programa['nombre_tecnica'] == null || programa['nombre_tecnica'].isEmpty) {
     return Container(); // O muestra un widget de error/placeholder
   }
 
   // Añadir logs para depurar
   print('Programa ID: ${programa['id']}');
-  print('Técnica: ${programa['tecnica']['nombre']}');
+  print('Técnica: ${programa['nombre_tecnica']}');
   
-  IconData iconoPrograma = iconMapping[programa['tecnica']['icon']] ?? Icons.self_improvement;
 
   Color backgroundColor;
-  Color iconColor;
   Color textColor;
 
   // Establecer colores dependiendo del tipo de terapia
-  if ((programa['tecnica']['id'] >= 7 && programa['tecnica']['id'] <= 10) ||
-      (programa['tecnica']['id'] >= 74 && programa['tecnica']['id'] <= 76)) {
+    if (programa['dia'] >= 1 && programa['dia'] <= 4) {
     backgroundColor = Color.fromARGB(255, 206, 252, 255); // Azul claro
-    iconColor = Color(0xFF44DEE8); // Azul para el ícono
     textColor = Color(0xFF44DEE8); // Azul para el texto
-  } else if ((programa['tecnica']['id'] >= 11 && programa['tecnica']['id'] <= 15) ||
-      (programa['tecnica']['id'] >= 92 && programa['tecnica']['id'] <= 95)) {
+  } else if (programa['dia'] >= 5 && programa['dia'] <= 7) {
+    backgroundColor = Color.fromARGB(255, 240, 230, 255); // Lavanda claro
+    textColor = Color(0xFF9C27B0); // Morado para el texto
+  } else if (programa['dia'] >= 8 && programa['dia'] <= 10) {
     backgroundColor = Color.fromARGB(255, 255, 220, 240); // Rosado claro
-    iconColor = Color(0xFFFF44B5); // Rosado para el ícono
     textColor = Color(0xFFFF44B5); // Rosado para el texto
-  } else if ((programa['tecnica']['id'] >= 16 && programa['tecnica']['id'] <= 21) ||
-      (programa['tecnica']['id'] >= 96 && programa['tecnica']['id'] <= 103)) {
+  } else if (programa['dia'] >= 11 && programa['dia'] <= 13) {
+    backgroundColor = Color.fromARGB(255, 255, 200, 240); // Rosa más suave
+    textColor = Color(0xFFFF80AB); // Rosa intenso para el texto
+  } else if (programa['dia'] >= 14 && programa['dia'] <= 16) {
     backgroundColor = Color.fromARGB(255, 255, 235, 205); // Naranja claro
-    iconColor = Color(0xFFFFA500); // Naranja para el ícono
     textColor = Color(0xFFFFA500); // Naranja para el texto
-  } else if ((programa['tecnica']['id'] >= 22 && programa['tecnica']['id'] <= 27) ||
-      (programa['tecnica']['id'] >= 104 && programa['tecnica']['id'] <= 110)) {
-    backgroundColor = Color.fromARGB(255, 240, 255, 208); // Verde claro
-    iconColor = Color(0xFF8BC34A); // Verde para el ícono
-    textColor = Color(0xFF8BC34A); // Verde para el texto
-  } else if ((programa['tecnica']['id'] >= 28 && programa['tecnica']['id'] <= 31) ||
-      (programa['tecnica']['id'] >= 111 && programa['tecnica']['id'] <= 116)) {
-    backgroundColor = Color.fromARGB(255, 220, 230, 250); // Azul violáceo claro
-    iconColor = Color(0xFF5C6BC0); // Azul violáceo para el ícono
-    textColor = Color(0xFF5C6BC0); // Azul violáceo para el texto
-  } else if (programa['tecnica']['id'] >= 52 && programa['tecnica']['id'] <= 58) {
-    backgroundColor = Color.fromARGB(255, 255, 240, 200); // Amarillo pálido
-    iconColor = Color(0xFFFFC107); // Amarillo para el ícono
+  } else if (programa['dia'] >= 17 && programa['dia'] <= 19) {
+    backgroundColor = Color.fromARGB(255, 255, 235, 175); // Amarillo suave
     textColor = Color(0xFFFFC107); // Amarillo para el texto
-  } else if (programa['tecnica']['id'] >= 59 && programa['tecnica']['id'] <= 65) {
-    backgroundColor = Color.fromARGB(255, 255, 200, 200); // Amarillo pálido
-    iconColor = Color.fromARGB(255, 255, 7, 7); // Amarillo para el ícono
-    textColor = Color.fromARGB(255, 255, 7, 7); // Amarillo para el texto
-  } else if (programa['tecnica']['id'] >= 66 && programa['tecnica']['id'] <= 73) {
-    backgroundColor = Color.fromARGB(255, 255, 200, 213); // Amarillo pálido
-    iconColor = Color.fromARGB(255, 255, 7, 230); // Amarillo para el ícono
-    textColor = Color.fromARGB(255, 255, 7, 230); // Amarillo para el texto
+  } else if (programa['dia'] >= 20 && programa['dia'] <= 21) {
+    backgroundColor = Color.fromARGB(255, 255, 180, 180); // Coral suave
+    textColor = Color(0xFFFF5722); // Naranja quemado para el texto
   } else {
+    // Para cualquier día fuera del rango de 1 a 21, asignamos un color por defecto
     backgroundColor = Color.fromARGB(255, 206, 252, 255); // Azul claro por defecto
-    iconColor = Color(0xFF44DEE8); // Azul para el ícono
     textColor = Color(0xFF44DEE8); // Azul para el texto
   }
+
 
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
@@ -309,7 +169,7 @@ Widget _buildProgramaWidget(dynamic programa, BuildContext context) {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  programa['tecnica']['nombre'] ?? 'Sin nombre',
+                  programa['nombre_tecnica'] ?? 'Sin nombre',
                   style: GoogleFonts.poppins(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.black),
                 ),
                 SizedBox(height: 8),
@@ -318,13 +178,13 @@ Widget _buildProgramaWidget(dynamic programa, BuildContext context) {
                   children: [
                     Flexible(
                       child: Text(
-                        programa['tecnica']['mensaje'] ?? '',
+                        programa['descripcion'] ?? '',
                         style: GoogleFonts.poppins(fontSize: 14.0, color: Colors.black87),
                       ),
                     ),
                     GestureDetector(
                       onTap: () {
-                        dynamic stepsData = programa['tecnica']['steps'];
+                        dynamic stepsData = programa['guia'];
                         List<dynamic> steps;
 
                         if (stepsData is String) {
@@ -337,14 +197,17 @@ Widget _buildProgramaWidget(dynamic programa, BuildContext context) {
                           context,
                           MaterialPageRoute(
                             builder: (context) => StepScreen(
-                              steps: steps,
-                              tecnicaNombre: programa['tecnica']['nombre'],
-                              dia: programa['dia'],
-                              userId: programa['user_id'],
-                              tecnicaId: programa['tecnica']['id'],
+                              steps: List<String>.from(json.decode(programa['guia'])), // Convertimos el JSON a una lista de String
+                              tecnicaNombre: programa['nombre_tecnica'],
+                              dia: int.tryParse(programa['dia'].toString()) ?? 0,
+                              userId: int.tryParse(programa['user_id'].toString()) ?? 0,
+                              tecnicaId: int.tryParse(programa['id'].toString()) ?? 0,
                             ),
                           ),
                         );
+
+
+
                       },
                       child: CircleAvatar(
                         backgroundColor: Color.fromARGB(255, 237, 221, 255),
@@ -386,17 +249,22 @@ Widget _buildProgramaWidget(dynamic programa, BuildContext context) {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(iconoPrograma, color: iconColor, size: 18),
-                          SizedBox(width: 4),
-                          Text(
-                            'Técnica',
-                            style: GoogleFonts.poppins(fontSize: 12.0, fontWeight: FontWeight.w400, color: textColor),
+                          // Se ajusta el texto para que se acomode en varias líneas si es necesario
+                          ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: 180), // Controlamos el ancho máximo
+                            child: Text(
+                              programa['tipo_tecnica'],
+                              style: GoogleFonts.poppins(fontSize: 12.0, fontWeight: FontWeight.w400, color: textColor),
+                              maxLines: 2, // Si el texto es largo, se ajusta en dos líneas como máximo
+                              overflow: TextOverflow.ellipsis, // Si sigue siendo largo, muestra "..."
+                            ),
                           ),
                         ],
                       ),
                     ),
                   ],
                 ),
+
               ],
             ),
           ),

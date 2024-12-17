@@ -209,60 +209,104 @@ class _IndexScreenState extends State<IndexScreen> {
   }
 
     Future<void> saveResponses() async {
-    // Verificar los valores de selectedAnswers
-    print('Selected Answers: $selectedAnswers');
+      // Verificar los valores de selectedAnswers
+      print('Selected Answers: $selectedAnswers');
 
-    if (selectedAnswers[3] == null) {
-      if (selectedOption != null) {
-        selectedAnswers[currentQuestionIndex] = selectedOption;
+      if (selectedAnswers[3] == null) {
+        if (selectedOption != null) {
+          selectedAnswers[currentQuestionIndex] = selectedOption;
+        }
+      }
+
+      final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+      final String createdAt = dateFormat.format(DateTime.now());
+
+      final Map<String, dynamic> dataToSend = {
+        "user_id": userId,
+        "age_range_id": selectedAnswers[0],
+        "hierarchical_level_id": selectedAnswers[2],
+        "responsability_level_id": selectedAnswers[3],
+        "gender_id": selectedAnswers[1],
+        "created_at": createdAt,
+      };
+
+      print('Data to send: $dataToSend');
+
+      try {
+        // Llamada a la API para guardar las respuestas
+        var response = await http.post(
+          Uri.parse('${Config.apiUrl}/guardarUserResponses'),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode(dataToSend),
+        );
+
+        if (response.statusCode == 201) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Respuestas guardadas exitosamente.')),
+          );
+
+          // Actualizar el campo userresponsebool utilizando la API existente
+          await _updateUserResponseBool();
+
+          // Navegar a la siguiente pantalla
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TestEstresScreen(),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error al guardar respuestas.')),
+          );
+        }
+      } catch (e) {
+        print('Error al enviar respuestas: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al enviar respuestas.')),
+        );
       }
     }
 
-    final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
-    final String createdAt = dateFormat.format(DateTime.now());
+    Future<void> _updateUserResponseBool() async {
+      try {
+        if (userId == null) {
+          print('No se encontró el ID del usuario.');
+          return;
+        }
 
-    final Map<String, dynamic> dataToSend = {
-      "user_id": userId,  
-      "age_range_id": selectedAnswers[0],  
-      "hierarchical_level_id": selectedAnswers[2],
-      "responsability_level_id": selectedAnswers[3],  
-      "gender_id": selectedAnswers[1],
-      "created_at": createdAt,
-    };
+        String? token = await getToken(); // Obtener el token de SharedPreferences
 
-    print('Data to send: $dataToSend');
+        if (token == null) {
+          print('No se encontró el token de autenticación.');
+          return;
+        }
 
-    try {
-      var response = await http.post(
-        Uri.parse('${Config.apiUrl}/guardarUserResponses'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(dataToSend),
-      );
-
-      if (response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Respuestas guardadas exitosamente.')),
+        final url = '${Config.apiUrl}/users/$userId';
+        final response = await http.put(
+          Uri.parse(url),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token', // Token de autenticación
+          },
+          body: jsonEncode({'userresponsebool': true}), // Actualizar el campo
         );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => TestEstresScreen(),  
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al guardar respuestas.')),
-        );
+
+        if (response.statusCode == 200) {
+          print('Campo userresponsebool actualizado correctamente.');
+          // Guardar en SharedPreferences
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('userresponsebool', true);
+        } else {
+          print('Error al actualizar userresponsebool: ${response.statusCode}');
+        }
+      } catch (e) {
+        print('Error al actualizar userresponsebool: $e');
       }
-    } catch (e) {
-      print('Error al enviar respuestas: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al enviar respuestas.')),
-      );
     }
-  }
+
 
 
 

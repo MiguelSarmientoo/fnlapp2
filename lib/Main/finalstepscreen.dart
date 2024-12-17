@@ -88,12 +88,12 @@ class _FinalStepScreenState extends State<FinalStepScreen> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/login.png'),
+                image: AssetImage('login.png'),
                 fit: BoxFit.cover,
               ),
             ),
             child: Container(
-              color: Colors.black.withOpacity(0.6), // Sombreado del 60% encima de la imagen
+              color: Colors.black.withOpacity(0.5), // Sombreado del 60% encima de la imagen
             ),
           ),
           Center(
@@ -118,7 +118,7 @@ class _FinalStepScreenState extends State<FinalStepScreen> {
                 ),
                 SizedBox(height: 20),
                 RatingBar.builder(
-                  initialRating: 0,
+                  initialRating: 3,
                   minRating: 1,
                   direction: Axis.horizontal,
                   allowHalfRating: false,

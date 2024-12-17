@@ -27,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
         height: double.infinity, // Asegura que ocupe toda la altura
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/fondosplash.png'), // Ruta de tu imagen
+            image: AssetImage('fondosplash.png'), // Ruta de tu imagen
             fit: BoxFit.cover, // La imagen cubrirá toda la pantalla
           ),
         ),

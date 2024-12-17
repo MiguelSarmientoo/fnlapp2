@@ -133,7 +133,7 @@ class _ChatMessageState extends State<ChatMessage> {
                 backgroundColor: Colors.transparent,
                 child: ClipOval(
                   child: Image.asset(
-                    widget.userType != 1 ? 'assets/user_img.jpg' : 'assets/logo_funcy_scale.png',
+                    widget.userType != 1 ? 'user_img.jpg' : 'logo_funcy_scale.png',
                     width: 60,
                     height: 60,
                     fit: BoxFit.cover,

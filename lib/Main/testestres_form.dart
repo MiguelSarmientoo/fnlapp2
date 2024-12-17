@@ -106,7 +106,6 @@ class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
         print('Error al obtener el gender_id: ${genderResponse.statusCode}');
         print('Cuerpo de la respuesta: ${genderResponse.body}');
         return;
-<<<<<<< HEAD
       }
 
       final List<dynamic> userData = json.decode(genderResponse.body);
@@ -177,48 +176,6 @@ class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
 
       // Llamar a la función generateReport() en paralelo
       generateReport();
-=======
-      }
-
-      final List<dynamic> userData = json.decode(genderResponse.body);
-      int genderId = userData.isNotEmpty ? userData[0]['gender_id'] ?? 1 : 1;
-
-      // Calcular el nivel de estrés y su ID
-      final Map<String, dynamic> estresResult = _calcularNivelEstres(totalScore, genderId);
-      String nivelEstres = estresResult['nivel'];
-      int estresNivelId = estresResult['id'];
-
-      // Guardar el test en el backend
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: json.encode(data),
-      );
-
-      if (response.statusCode != 200) {
-        print('Error al guardar el test: ${response.body}');
-        return;
-      }
-
-      // Actualizar el nivel de estrés en el backend
-      final updateData = {
-        'user_id': userId,
-        'estres_nivel_id': estresNivelId,
-      };
-      final updateResponse = await http.post(
-        updateEstresUrl,
-        headers: {"Content-Type": "application/json"},
-        body: json.encode(updateData),
-      );
-
-      if (updateResponse.statusCode != 200) {
-        print('Error al actualizar el estres_nivel_id: ${updateResponse.body}');
-        return;
-      }
-
-      // Actualizar testestresbool a true
-      await _updateTestEstresBool();
->>>>>>> e749b1eaf2a95d621b889afa30cf64a8615f42ba
 
       // Navegar a la pantalla de programa de estrés
       Navigator.pushReplacement(

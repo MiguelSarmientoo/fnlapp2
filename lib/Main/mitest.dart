@@ -11,16 +11,16 @@ class MiTestScreen extends StatelessWidget {
     String imagePath;
     switch (nivelEstres.toUpperCase()) {
       case 'LEVE':
-        imagePath = 'assets/leve2.png';
+        imagePath = 'leve2.png';
         break;
       case 'MODERADO':
-        imagePath = 'assets/moderado2.png';
+        imagePath = 'moderado2.png';
         break;
       case 'SEVERO':
-        imagePath = 'assets/severo2.png';
+        imagePath = 'severo2.png';
         break;
       default:
-        imagePath = 'assets/fondoFNL.jpg'; 
+        imagePath = 'fondoFNL.jpg'; 
     }
 
     return Scaffold(

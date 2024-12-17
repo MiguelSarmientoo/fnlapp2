@@ -19,7 +19,7 @@ class TestEstresScreen extends StatelessWidget {
               
               // Imagen en la parte superior
               Image.asset(
-                'assets/testestres/estresimg.png', // Asegúrate de tener la imagen en los assets
+                'testestres/estresimg.png', // Asegúrate de tener la imagen en los assets
                 height: 350,  // Ajusta el tamaño si es necesario
               ),
               

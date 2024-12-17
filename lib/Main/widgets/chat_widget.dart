@@ -71,7 +71,7 @@ class ChatWidget extends StatelessWidget {
 
   Widget _buildLogo() {
     return Image.asset(
-      'assets/logo_funcy_splash.png', // Asegúrate de que la ruta sea correcta
+      'logo_funcy_splash.png', // Asegúrate de que la ruta sea correcta
       height: 80, // Ajusta la altura según sea necesario
       fit: BoxFit.contain,
     );

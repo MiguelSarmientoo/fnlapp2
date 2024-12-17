@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:fnlapp/SharedPreferences/sharedpreference.dart';
 import 'package:fnlapp/Main/cargarprograma.dart';
 import 'package:fnlapp/config.dart';
+import 'package:fnlapp/SharedPreferences/sharedpreference.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../Preguntas/questions_data.dart';
 
 class TestEstresQuestionScreen extends StatefulWidget {
@@ -15,7 +17,8 @@ class TestEstresQuestionScreen extends StatefulWidget {
 
 class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
   int currentQuestionIndex = 0;
-  List<int?> selectedOptions = List<int?>.filled(23, null); // Almacena las respuestas seleccionadas
+  List<int> selectedOptions = List<int>.filled(23, 0); // Asigna un valor predeterminado (por ejemplo, 0)
+
   int? userId;
 
   @override
@@ -29,6 +32,12 @@ class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
     int? id = await getUserId();  // Función que obtienes de SharedPreferences
     setState(() {
       userId = id;
+      if (userId == null) {
+        print('Error: userId is null');
+        return;
+      }else{
+        print('Success: todo bien con el id');
+      }
     });
   }
 
@@ -40,10 +49,15 @@ class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
   }
 
   void goToNextQuestion() {
-    if (currentQuestionIndex < questions.length - 1) {
+    if (selectedOptions[currentQuestionIndex] != 0 &&
+        currentQuestionIndex < questions.length - 1) {
       setState(() {
         currentQuestionIndex++;
       });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Por favor selecciona una opción antes de continuar')),
+      );
     }
   }
 
@@ -56,180 +70,336 @@ class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
   }
 
   Future<void> submitTest() async {
+    // Validar userId antes de proceder
+    if (userId == null) {
+      print("Error: userId es null");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: No se ha cargado el ID del usuario')),
+      );
+      return;
+    }
+
+    // Validar si selectedOptions está correctamente poblado
+    if (selectedOptions.isEmpty || selectedOptions.length < 23) {
+      print("Error: selectedOptions no tiene suficientes datos.");
+      return;
+    }
+
+    // URLs de las APIs
     final url = Uri.parse('${Config.apiUrl}/guardarTestEstres');
     final updateEstresUrl = Uri.parse('${Config.apiUrl}/userestresessions/assign');
-    
+
+    // Construir el payload para guardar el test
     final Map<String, dynamic> data = {
       'user_id': userId,
-      'pregunta_1': selectedOptions[0],
-      'pregunta_2': selectedOptions[1],
-      'pregunta_3': selectedOptions[2],
-      'pregunta_4': selectedOptions[3],
-      'pregunta_5': selectedOptions[4],
-      'pregunta_6': selectedOptions[5],
-      'pregunta_7': selectedOptions[6],
-      'pregunta_8': selectedOptions[7],
-      'pregunta_9': selectedOptions[8],
-      'pregunta_10': selectedOptions[9],
-      'pregunta_11': selectedOptions[10],
-      'pregunta_12': selectedOptions[11],
-      'pregunta_13': selectedOptions[12],
-      'pregunta_14': selectedOptions[13],
-      'pregunta_15': selectedOptions[14],
-      'pregunta_16': selectedOptions[15],
-      'pregunta_17': selectedOptions[16],
-      'pregunta_18': selectedOptions[17],
-      'pregunta_19': selectedOptions[18],
-      'pregunta_20': selectedOptions[19],
-      'pregunta_21': selectedOptions[20],
-      'pregunta_22': selectedOptions[21],
-      'pregunta_23': selectedOptions[22],
+      for (int i = 0; i < selectedOptions.length; i++) 'pregunta_${i + 1}': selectedOptions[i],
       'estado': 'activo',
     };
 
-    int totalScore = selectedOptions.fold(0, (sum, value) => sum + (value ?? 0));
+    // Calcular el puntaje total
+    int totalScore = selectedOptions.fold(0, (sum, value) => sum + value);
 
     try {
-      String nivelEstres = '';
-      int estresNivelId = 0;
-
+      // Obtener el gender_id del usuario
       final genderResponse = await http.get(Uri.parse('${Config.apiUrl}/userResponses/$userId'));
-
-      if (genderResponse.statusCode == 200) {
-        final List<dynamic> userData = json.decode(genderResponse.body);
-        int genderId = userData[0]['gender_id'];
-
-        // Calcular el nivel de estrés
-        if (totalScore <= 92) {
-          nivelEstres = 'LEVE';
-          estresNivelId = 1;
-        } else if (totalScore > 92 && totalScore <= 138) {
-          if (genderId == 1 || genderId == null) {
-            nivelEstres = 'MODERADO';
-            estresNivelId = 2;
-          } else if (genderId == 2) {
-            if (totalScore <= 132) {
-              nivelEstres = 'MODERADO';
-              estresNivelId = 2;
-            } else {
-              nivelEstres = 'ALTO';
-              estresNivelId = 3;
-            }
-          }
-        } else if (totalScore <= 161) {
-          if (genderId == 1 || genderId == null) {
-            if (totalScore > 138) {
-              nivelEstres = 'ALTO';
-              estresNivelId = 3;
-            }
-          } else if (genderId == 2) {
-            if (totalScore > 132) {
-              nivelEstres = 'ALTO';
-              estresNivelId = 3;
-            }
-          }
-        }
-
-        // Enviar el nivel de estrés al backend para generar las técnicas
-        final response = await http.post(
-          url,
-          headers: {"Content-Type": "application/json"},
-          body: json.encode(data),
-        );
-
-        if (response.statusCode == 200) {
-          final updateData = {
-            'user_id': userId,
-            'estres_nivel_id': estresNivelId,
-          };
-
-          final updateResponse = await http.post(
-            updateEstresUrl,
-            headers: {"Content-Type": "application/json"},
-            body: json.encode(updateData),
-          );
-
-          if (updateResponse.statusCode == 200) {
-            // Después de procesar las respuestas, mostrar las técnicas de estrés generadas
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CargarProgramaScreen(nivelEstres: nivelEstres),
-              ),
-            );
-          } else {
-            print('Error al actualizar el estres_nivel_id: ${updateResponse.body}');
-          }
-        } else {
-          print('Error al guardar el test: ${response.body}');
-        }
-      } else {
+      if (genderResponse.statusCode != 200) {
         print('Error al obtener el gender_id: ${genderResponse.statusCode}');
+        print('Cuerpo de la respuesta: ${genderResponse.body}');
+        return;
       }
+
+      final List<dynamic> userData = json.decode(genderResponse.body);
+      int genderId = userData.isNotEmpty ? userData[0]['gender_id'] ?? 1 : 1;
+
+      // Calcular el nivel de estrés y su ID
+      final Map<String, dynamic> estresResult = _calcularNivelEstres(totalScore, genderId);
+      String nivelEstres = estresResult['nivel'];
+      int estresNivelId = estresResult['id'];
+
+      // Guardar el test en el backend
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: json.encode(data),
+      );
+
+      if (response.statusCode != 200) {
+        print('Error al guardar el test: ${response.body}');
+        return;
+      }
+
+      // Actualizar el nivel de estrés en el backend
+      final updateData = {
+        'user_id': userId,
+        'estres_nivel_id': estresNivelId,
+      };
+      final updateResponse = await http.post(
+        updateEstresUrl,
+        headers: {"Content-Type": "application/json"},
+        body: json.encode(updateData),
+      );
+
+      if (updateResponse.statusCode != 200) {
+        print('Error al actualizar el estres_nivel_id: ${updateResponse.body}');
+        return;
+      }
+
+      // Actualizar testestresbool a true
+      await _updateTestEstresBool();
+
+      // Navegar a la pantalla de programa de estrés
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CargarProgramaScreen(nivelEstres: nivelEstres),
+        ),
+      );
     } catch (e) {
-      print('Error al enviar el test: $e');
+      print('Error al procesar el test: $e');
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final question = questions[currentQuestionIndex];
+  // Función para calcular el nivel de estrés
+  Map<String, dynamic> _calcularNivelEstres(int totalScore, int genderId) {
+    String nivelEstres = '';
+    int estresNivelId = 0;
 
+    if (totalScore <= 92) {
+      nivelEstres = 'LEVE';
+      estresNivelId = 1;
+    } else if (totalScore > 92 && totalScore <= 138) {
+      if (genderId == 1) {
+        nivelEstres = 'MODERADO';
+        estresNivelId = 2;
+      } else if (genderId == 2) {
+        nivelEstres = totalScore <= 132 ? 'MODERADO' : 'ALTO';
+        estresNivelId = totalScore <= 132 ? 2 : 3;
+      }
+    } else if (totalScore > 138) {
+      if (genderId == 1) {
+        nivelEstres = 'ALTO';
+        estresNivelId = 3;
+      } else if (genderId == 2) {
+        nivelEstres = 'ALTO';
+        estresNivelId = 3;
+      }
+    }
+
+    return {'nivel': nivelEstres, 'id': estresNivelId};
+  }
+
+  // Actualizar testestresbool a true en el backend
+  Future<void> _updateTestEstresBool() async {
+    try {
+      String? token = await getToken(); // Obtener token de SharedPreferences
+      if (token == null) {
+        print('Error: No se encontró el token.');
+        return;
+      }
+
+      final url = Uri.parse('${Config.apiUrl}/users/$userId');
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({'testestresbool': true}),
+      );
+
+      if (response.statusCode == 200) {
+        print('Campo testestresbool actualizado correctamente.');
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('testestresbool', true);
+      } else {
+        print('Error al actualizar testestresbool: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error al actualizar testestresbool: $e');
+    }
+  }
+
+
+
+  @override
+Widget build(BuildContext context) {
+  // Verificación inicial para asegurarse de que 'questions' no esté vacío y que el índice esté en rango
+  if (questions.isEmpty || currentQuestionIndex >= questions.length) {
     return Scaffold(
-      body: SingleChildScrollView( // Envolver el contenido principal en un SingleChildScrollView
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            children: [
-              SizedBox(height: 20),
+      body: Center(
+        child: Text("No hay preguntas disponibles"), // Mensaje de error si no hay preguntas
+      ),
+    );
+  }
+
+  // Asignar la pregunta actual solo si la lista de preguntas tiene contenido y el índice es válido
+  final question = questions[currentQuestionIndex];
+
+  return Scaffold(
+    body: SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center, // Centra los elementos en el eje horizontal
+          children: [
+            SizedBox(height: 20),
+
+            // Mostrar el número de pregunta actual
+            Text(
+              'Pregunta ${currentQuestionIndex + 1} de ${questions.length}',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            SizedBox(height: 20),
+
+            // Verificar que 'question['question']' no sea null antes de usarlo
+            if (question['question'] != null) ...[
               Text(
-                'Pregunta ${currentQuestionIndex + 1} de ${questions.length}',
-                style: TextStyle(fontSize: 20),
+                question['question']!,
+                textAlign: TextAlign.center, // Centra el texto
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold), // Font más pequeño
               ),
-              SizedBox(height: 20),
-              Text(question['question']!, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-              if (question['description'] != null) ...[
-                SizedBox(height: 10),
-                Text(question['description']!, style: TextStyle(fontSize: 18)),
-              ],
-              SizedBox(height: 20),
-              Column(
-                children: List.generate(8, (index) {
-                  return RadioListTile<int>(
-                    title: Text(question['option${index + 1}']!),
-                    value: index + 1,
-                    groupValue: selectedOptions[currentQuestionIndex],
-                    onChanged: (value) {
-                      if (value != null) {
-                        selectOption(value);
-                      }
-                    },
-                  );
-                }),
+            ] else ...[
+              Text(
+                'Pregunta no disponible',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  if (currentQuestionIndex > 0)
-                    ElevatedButton(
-                      onPressed: goToPreviousQuestion,
-                      child: Text('Anterior'),
+            ],
+
+            // Descripción centrada y con margen superior
+            if (question['description'] != null) ...[
+              SizedBox(height: 12), // Margen superior
+              Text(
+                question['description']!,
+                textAlign: TextAlign.center, // Centra el texto
+                style: TextStyle(fontSize: 16),
+              ),
+            ],
+            SizedBox(height: 20),
+
+            // Opciones de respuesta
+            Column(
+  children: List.generate(8, (index) {
+    final optionKey = 'option${index + 1}';
+    final detailKey = 'detail${index + 1}';
+    final optionText = question[optionKey];
+    final optionDetail = question[detailKey];
+
+    // Verificar que cada opción no sea null antes de crear el widget
+    if (optionText == null || optionDetail == null) {
+      return SizedBox.shrink(); // No mostrar si la opción o detalle son null
+    }
+
+    bool isSelected = selectedOptions[currentQuestionIndex] == (index + 1);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 5),
+      child: GestureDetector(
+        onTap: () => selectOption(index + 1), // Seleccionar opción al hacer clic
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300), // Animación al cambiar tamaño
+          width: double.infinity, // Opción ocupa todo el ancho disponible
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 13),
+          decoration: BoxDecoration(
+            color: isSelected ? Color.fromARGB(255, 56, 30, 134) : const Color.fromARGB(255, 234, 234, 234),
+            border: Border.all(
+              color: isSelected ? Color.fromARGB(255, 40, 19, 105) : const Color.fromARGB(255, 212, 212, 212),
+              width: 2.0,
+            ),
+            borderRadius: BorderRadius.circular(6), // Bordes más cuadrados
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                optionText,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, // Negrita si está seleccionado
+                  color: isSelected ? Colors.white : Colors.black,
+                ),
+              ),
+              if (isSelected) // Mostrar el detalle si la opción está seleccionada
+                Padding(
+                  padding: const EdgeInsets.only(top: 13.0), // Incrementar margen superior del detalle
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: "Detalle: ",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold, // Negrita para "Detalle:"
+                            color: Colors.white,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                        TextSpan(
+                          text: optionDetail,
+                          style: const TextStyle(
+                            fontStyle: FontStyle.italic, // Texto en cursiva para el detalle
+                            fontSize: 14, // Tamaño de fuente reducido
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
                     ),
-                  ElevatedButton(
-                    onPressed: goToNextQuestion,
-                    child: Text('Siguiente'),
                   ),
-                ],
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: submitTest,
-                child: Text('Enviar Test'),
-              ),
+                ),
             ],
           ),
         ),
       ),
     );
-  }
+  }),
+),
+
+
+
+
+
+
+            SizedBox(height: 20),
+
+            // Botones de navegación
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (currentQuestionIndex > 0)
+                  ElevatedButton(
+                    onPressed: goToPreviousQuestion,
+                    child: Text('Anterior'),
+                  ),
+
+                if (currentQuestionIndex < questions.length - 1)
+                  ElevatedButton(
+                    onPressed: selectedOptions[currentQuestionIndex] != 0
+                        ? goToNextQuestion
+                        : null, // Deshabilitar si no hay selección
+                    child: Text('Siguiente'),
+                  ),
+
+              ],
+            ),
+            SizedBox(height: 20),
+
+            // Botón para enviar el test
+            Padding(
+              padding: const EdgeInsets.only(bottom: 15.0),
+              child: ElevatedButton(
+                onPressed: (currentQuestionIndex == questions.length - 1 &&
+                        selectedOptions[currentQuestionIndex] != 0)
+                    ? submitTest
+                    : null, // Deshabilitar si no es la última pregunta o no hay selección
+                child: Text('Enviar Test'),
+              ),
+            ),
+
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+
 }

@@ -227,7 +227,7 @@ class _ChatScreenState extends State<ChatScreen> {
               children: [
                 Positioned.fill(
                   child: Image.asset(
-                    'assets/fondoFNL.jpg',
+                    'fondoFNL.jpg',
                     fit: BoxFit.cover,
                   ),
                 ),

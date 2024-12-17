@@ -45,10 +45,12 @@ class _LoginScreenState extends State<LoginScreen> {
     final userId = responseBody['userId'];
     final email = responseBody['email'];
     final permisopoliticas = responseBody['permisopoliticas'];
+    final userresponsebool = responseBody['userresponsebool'];
+    final testestresbool = responseBody['testestresbool'];
 
     if (token != null && username != null && userId != null && email != null) {
       await _saveUserData(token, username, userId, email);
-      _navigateBasedOnPermission(context, permisopoliticas);
+      _navigateBasedOnPermission(context, permisopoliticas, userresponsebool, testestresbool);
     } else {
       _showSnackBar(context, 'Datos de autenticación no recibidos');
     }
@@ -62,15 +64,28 @@ class _LoginScreenState extends State<LoginScreen> {
     await prefs.setString('email', email);
   }
 
-  void _navigateBasedOnPermission(BuildContext context, bool? permisopoliticas) {
-    if (permisopoliticas == false) {
-      Navigator.pushReplacementNamed(context, '/index');
-    } else if (permisopoliticas == true) {
-      Navigator.pushReplacementNamed(context, '/home');
-    } else {
-      _showSnackBar(context, 'Valor de permisopoliticas no esperado');
-    }
+  // void _navigateBasedOnPermission(BuildContext context, bool? permisopoliticas) {
+  //   if (permisopoliticas == false) {
+  //     Navigator.pushReplacementNamed(context, '/index');
+  //   } else if (permisopoliticas == true) {
+  //     Navigator.pushReplacementNamed(context, '/home');
+  //   } else {
+  //     _showSnackBar(context, 'Valor de permisopoliticas no esperado');
+  //   }
+  // }
+
+  void _navigateBasedOnPermission(BuildContext context, bool? permisopoliticas, bool? userresponsebool, bool? testestresbool) {
+  if ((permisopoliticas == true || permisopoliticas == 1) &&
+      (userresponsebool == true || userresponsebool == 1) &&
+      (testestresbool == true || testestresbool == 1)) {
+    Navigator.pushReplacementNamed(context, '/home');
+  } else {
+    Navigator.pushReplacementNamed(context, '/index');
   }
+}
+
+
+
 
   void _showSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
@@ -82,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset('assets/login.png', fit: BoxFit.cover),
+            child: Image.asset('login.png', fit: BoxFit.cover),
           ),
           Center(
             child: SingleChildScrollView(
@@ -96,7 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       Padding(
                         padding: EdgeInsets.only(bottom: 32.0),
-                        child: Image.asset('assets/logo.png', width: 200.0),
+                        child: Image.asset('logo.png', width: 200.0),
                       ),
                       _buildTextField(Icons.person, 'Usuario', emailController),
                       SizedBox(height: 12.0),
@@ -151,18 +166,23 @@ class _LoginScreenState extends State<LoginScreen> {
           Icon(icon, color: Colors.grey[700]),
           SizedBox(width: 10),
           Expanded(
-            child: TextFormField(
-              controller: controller,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                hintText: hintText,
-              ),
-              obscureText: obscureText && !passwordVisible.value,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Este campo es requerido';
-                }
-                return null;
+            child: ValueListenableBuilder<bool>(
+              valueListenable: passwordVisible,
+              builder: (context, value, child) {
+                return TextFormField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: hintText,
+                  ),
+                  obscureText: obscureText && !value,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Este campo es requerido';
+                    }
+                    return null;
+                  },
+                );
               },
             ),
           ),
@@ -180,4 +200,5 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+
 }

@@ -18,11 +18,11 @@ class TestEstresScreen extends StatelessWidget {
               Spacer(flex: 2),  // Espacio superior flexible (mayor)
               
               // Imagen en la parte superior
-              Image.asset(
-                'testestres/estresimg.png', // Asegúrate de tener la imagen en los assets
+              Image.network(
+                'https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/testestres/estresimg.png', // URL de la imagen en S3
                 height: 350,  // Ajusta el tamaño si es necesario
               ),
-              
+                            
               SizedBox(height: 40),  // Espacio entre la imagen y el título
 
               // Título

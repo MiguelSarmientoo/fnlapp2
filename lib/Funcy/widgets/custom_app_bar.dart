@@ -39,7 +39,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 color: Colors.white,
                 shape: BoxShape.circle,
                 image: DecorationImage(
-                  image: AssetImage('logo_funcy_scale.png'),
+                  image: NetworkImage(
+                    'https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/logo_funcy_scale.png', // URL de la imagen
+                  ),
                   fit: BoxFit.cover,
                 ),
               ),

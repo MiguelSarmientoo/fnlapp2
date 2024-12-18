@@ -20,8 +20,8 @@ class SplashScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
-        child: Image.asset(
-          'logo_funcy_splash.png',
+        child: Image.network(
+          'https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/fondosplash.png', // Cambiado a URL
           width: 160,
           height: 180,
         ),

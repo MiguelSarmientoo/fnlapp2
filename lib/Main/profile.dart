@@ -13,83 +13,97 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Obtener el tamaño de la pantalla
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
-      backgroundColor: Color(0xFFF7F2FA), // Color de fondo suave
+      backgroundColor: Color(0xFFF7F2FA),
       appBar: AppBar(
         backgroundColor: Color(0xFF5027D0),
         title: Text(
           'Perfil',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
         ),
         centerTitle: true,
-        elevation: 2,
+        elevation: 3,
       ),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(screenWidth * 0.04), // Espaciado flexible
           child: profileData == null
-              ? CircularProgressIndicator()
+              ? const CircularProgressIndicator()
               : SingleChildScrollView(
-                  child: _buildProfileInfo(),
+                  child: _buildProfileInfo(screenWidth),
                 ),
         ),
       ),
     );
   }
 
-  Widget _buildProfileInfo() {
+  Widget _buildProfileInfo(double screenWidth) {
     return Container(
-      constraints: BoxConstraints(maxWidth: 400),
-      padding: EdgeInsets.all(20.0),
+      constraints: BoxConstraints(maxWidth: screenWidth * 0.85), // Porcentaje del ancho de pantalla
+      padding: EdgeInsets.all(screenWidth * 0.05), // Espaciado flexible
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.0),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF5027D0), Color(0xFF9F8CFD)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(30.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            blurRadius: 10,
-            offset: Offset(0, 5),
+            color: Colors.grey.withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
         children: [
-          CircleAvatar(
-            radius: 50,
-            backgroundColor: Colors.grey[200],
-            backgroundImage: profileData?.profileImage != null
-                ? NetworkImage(profileData!.profileImage!)
-                : null,
-            child: profileData?.profileImage == null
-                ? Icon(
-                    Icons.account_circle,
-                    size: 60,
-                    color: Color(0xFF5027D0),
-                  )
-                : null,
-          ),
-          SizedBox(height: 20),
+          _buildProfileImage(),
+          const SizedBox(height: 20),
           _buildProfileDetails(),
-          Divider(
-            height: 30,
-            thickness: 1,
-            color: Colors.grey[300],
-          ),
+          const SizedBox(height: 20),
           _buildAdditionalInfo(),
-          SizedBox(height: 20),
+          const Divider(
+            height: 40,
+            thickness: 1.5,
+            color: Colors.white70,
+          ),
+          const SizedBox(height: 20),
           _buildLogoutButton(),
-          SizedBox(height: 12),
+          const SizedBox(height: 10),
           Text(
-            'Versión: 1.0.0',
+            'Versión 1.0.0',
             style: GoogleFonts.poppins(
-              fontSize: 12.0,
-              color: Colors.grey[600],
+              fontSize: 13.0,
+              color: Colors.white70,
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildProfileImage() {
+    return CircleAvatar(
+      radius: 70,
+      backgroundColor: Colors.white,
+      backgroundImage: profileData?.profileImage != null
+          ? NetworkImage(profileData!.profileImage!)
+          : null,
+      child: profileData?.profileImage == null
+          ? const Icon(
+              Icons.account_circle,
+              size: 80,
+              color: Color(0xFF5027D0),
+            )
+          : null,
     );
   }
 
@@ -98,62 +112,58 @@ class ProfileScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
-          profileData?.email ?? '',
+          profileData?.email ?? 'Cargando...',
           style: GoogleFonts.poppins(
-            fontSize: 20.0,
+            fontSize: 22.0,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF5027D0),
+            color: Colors.white,
           ),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
+        Text(
+          profileData?.email ?? 'Nombre no disponible',
+          style: GoogleFonts.poppins(
+            fontSize: 18.0,
+            fontWeight: FontWeight.w500,
+            color: Colors.white70,
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildAdditionalInfo() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Correo:',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-                fontSize: 16.0,
-                color: Colors.grey[700],
-              ),
-            ),
-            Text(
-              profileData?.email ?? 'No disponible',
-              style: GoogleFonts.poppins(
-                fontSize: 16.0,
-                color: Colors.grey[800],
-              ),
-            ),
-          ],
+        _buildInfoRow('Correo:', profileData?.email ?? 'No disponible'),
+        const SizedBox(height: 10),
+        _buildInfoRow('Nivel jerárquico:', profileData?.hierarchicalLevel ?? 'No disponible'),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w600,
+            fontSize: 16.0,
+            color: Colors.white70,
+          ),
         ),
-        SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Nivel jerárquico:',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-                fontSize: 16.0,
-                color: Colors.grey[700],
-              ),
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: GoogleFonts.poppins(
+              fontSize: 16.0,
+              color: Colors.white,
             ),
-            Text(
-              profileData?.hierarchicalLevel ?? 'No disponible',
-              style: GoogleFonts.poppins(
-                fontSize: 16.0,
-                color: Colors.grey[800],
-              ),
-            ),
-          ],
+          ),
         ),
       ],
     );
@@ -167,13 +177,14 @@ class ProfileScreen extends StatelessWidget {
         style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
       ),
       style: ElevatedButton.styleFrom(
-        backgroundColor: Color(0xFF5027D0),
+        backgroundColor: const Color(0xFF5027D0),
         foregroundColor: Colors.white,
-        padding: EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(25),
         ),
-        elevation: 6,
+        elevation: 8,
+        shadowColor: Colors.grey.withOpacity(0.3),
       ),
     );
   }

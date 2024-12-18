@@ -69,13 +69,13 @@ class ChatWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildLogo() {
-    return Image.asset(
-      'logo_funcy_splash.png', // Asegúrate de que la ruta sea correcta
-      height: 80, // Ajusta la altura según sea necesario
-      fit: BoxFit.contain,
-    );
-  }
+Widget _buildLogo() {
+  return Image.network(
+    'http://funkyrecursos.s3.us-east-2.amazonaws.com/assets/logo_funcy_splash.png', // URL de la imagen en S3
+    height: 80, // Ajusta la altura según sea necesario
+    fit: BoxFit.contain,
+  );
+}
 
   Widget _buildChatMessage(String message) {
     return Container(

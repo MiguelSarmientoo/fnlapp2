@@ -225,12 +225,12 @@ class _ChatScreenState extends State<ChatScreen> {
           Expanded(
             child: Stack(
               children: [
-                Positioned.fill(
-                  child: Image.asset(
-                    'fondoFNL.jpg',
-                    fit: BoxFit.cover,
+                  Positioned.fill(
+                    child: Image.network(
+                      'https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/fondoFNL.jpg',
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                ),
                 Column(
                   children: [
                     Expanded(

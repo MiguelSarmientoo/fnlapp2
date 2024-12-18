@@ -8,24 +8,24 @@ class MiTestScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Determinar la ruta de la imagen en función del nivel de estrés
-    String imagePath;
+    String imageUrl;
     switch (nivelEstres.toUpperCase()) {
       case 'LEVE':
-        imagePath = 'leve2.png';
+        imageUrl = 'https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/leve2.png';
         break;
       case 'MODERADO':
-        imagePath = 'moderado2.png';
+        imageUrl = 'https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/moderado2.png';
         break;
       case 'SEVERO':
-        imagePath = 'severo2.png';
+        imageUrl = 'https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/severo2.png';
         break;
       default:
-        imagePath = 'fondoFNL.jpg'; 
+        imageUrl = 'https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/fondoFNL.jpg';
     }
 
     return Scaffold(
-      body: Image.asset(
-        imagePath,
+      body: Image.network(
+        imageUrl,
         fit: BoxFit.cover,
         height: double.infinity,
         width: double.infinity,

@@ -27,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
         height: double.infinity, // Asegura que ocupe toda la altura
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('fondosplash.png'), // Ruta de tu imagen
+            image: NetworkImage('https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/fondosplash.png'), // URL de la imagen en S3
             fit: BoxFit.cover, // La imagen cubrirá toda la pantalla
           ),
         ),

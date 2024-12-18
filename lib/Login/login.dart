@@ -64,109 +64,77 @@ class _LoginScreenState extends State<LoginScreen> {
     await prefs.setString('email', email);
   }
 
-  // void _navigateBasedOnPermission(BuildContext context, bool? permisopoliticas) {
-  //   if (permisopoliticas == false) {
-  //     Navigator.pushReplacementNamed(context, '/index');
-  //   } else if (permisopoliticas == true) {
-  //     Navigator.pushReplacementNamed(context, '/home');
-  //   } else {
-  //     _showSnackBar(context, 'Valor de permisopoliticas no esperado');
-  //   }
-  // }
-
   void _navigateBasedOnPermission(BuildContext context, bool? permisopoliticas, bool? userresponsebool, bool? testestresbool) {
-  if ((permisopoliticas == true || permisopoliticas == 1) &&
-      (userresponsebool == true || userresponsebool == 1) &&
-      (testestresbool == true || testestresbool == 1)) {
-    Navigator.pushReplacementNamed(context, '/home');
-  } else {
-    Navigator.pushReplacementNamed(context, '/index');
+    if ((permisopoliticas == true || permisopoliticas == 1) &&
+        (userresponsebool == true || userresponsebool == 1) &&
+        (testestresbool == true || testestresbool == 1)) {
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      Navigator.pushReplacementNamed(context, '/index');
+    }
   }
-}
-
-
-
 
   void _showSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    body: Stack(
-      children: [
-        // Fondo de pantalla con URL externa
-        Positioned.fill(
-          child: Image.network(
-            'https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/login.png',
-            fit: BoxFit.cover,
-            loadingBuilder: (context, child, progress) {
-              if (progress == null) return child; // Imagen cargada
-              return Center(child: CircularProgressIndicator());
-            },
-            errorBuilder: (context, error, stackTrace) {
-              return Center(child: Text('Error al cargar la imagen'));
-            },
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.network(
+              'https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/login.png', // Cargar imagen desde la URL
+              fit: BoxFit.cover,
+            ),
           ),
-        ),
-        Center(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(16.0),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 400),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Logo con URL externa
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 32.0),
-                      child: Image.network(
-                        'https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/logo.png',
-                        width: 200.0,
-                        loadingBuilder: (context, child, progress) {
-                          if (progress == null) return child; // Imagen cargada
-                          return Center(child: CircularProgressIndicator());
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Center(child: Text('Error al cargar el logo'));
-                        },
+          Center(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(16.0),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 400),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.only(bottom: 32.0),
+                        child: Image.network('https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/logo.png', width: 200.0),
                       ),
-                    ),
-                    _buildTextField(Icons.person, 'Usuario', emailController),
-                    SizedBox(height: 12.0),
-                    _buildTextField(Icons.lock, 'Contraseña', passwordController, obscureText: true),
-                    SizedBox(height: 32),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => _login(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color.fromARGB(255, 61, 23, 126),
-                          padding: EdgeInsets.symmetric(vertical: 20),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30.0),
+                      _buildTextField(Icons.person, 'Usuario', emailController),
+                      SizedBox(height: 12.0),
+                      _buildTextField(Icons.lock, 'Contraseña', passwordController, obscureText: true),
+                      SizedBox(height: 32),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => _login(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color.fromARGB(255, 61, 23, 126),
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                            elevation: 4,
                           ),
-                          elevation: 4,
-                        ),
-                        child: Text(
-                          'Iniciar Sesión',
-                          style: TextStyle(color: Colors.white, fontSize: 16),
+                          child: Text(
+                            'Iniciar Sesión',
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   Widget _buildTextField(IconData icon, String hintText, TextEditingController controller, {bool obscureText = false}) {
     return Container(
@@ -222,5 +190,4 @@ Widget build(BuildContext context) {
       ),
     );
   }
-
 }

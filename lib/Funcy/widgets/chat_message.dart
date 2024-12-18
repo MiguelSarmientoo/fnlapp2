@@ -132,8 +132,10 @@ class _ChatMessageState extends State<ChatMessage> {
                 radius: 20.0,
                 backgroundColor: Colors.transparent,
                 child: ClipOval(
-                  child: Image.asset(
-                    widget.userType != 1 ? 'user_img.jpg' : 'logo_funcy_scale.png',
+                  child: Image.network(
+                    widget.userType != 1
+                        ? 'https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/user_img.jpg' 
+                        : 'https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/logo_funcy_scale.png',
                     width: 60,
                     height: 60,
                     fit: BoxFit.cover,

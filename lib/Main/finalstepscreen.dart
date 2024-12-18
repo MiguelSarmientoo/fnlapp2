@@ -88,7 +88,7 @@ class _FinalStepScreenState extends State<FinalStepScreen> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('login.png'),
+                image: NetworkImage('https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/login.png'),
                 fit: BoxFit.cover,
               ),
             ),

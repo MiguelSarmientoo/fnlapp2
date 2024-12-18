@@ -179,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (userId != null) {
       // Obtener el nivel de estrés
       final responseNivel = await http.get(
-        Uri.parse('http://localhost:3000/api/userestresessions/$userId/nivel'),
+        Uri.parse('http://54.232.83.174:3000/api/userestresessions/$userId/nivel'),
       );
 
       if (responseNivel.statusCode == 200) {
@@ -201,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
       // Intentar obtener los programas con reintentos
       while (retryCount < maxRetries) {
         final responseProgramas = await http.post(
-          Uri.parse('http://localhost:3000/api/userprograma/getprogramcompleto/$userId'),
+          Uri.parse('http://54.232.83.174:3000/api/userprograma/getprogramcompleto/$userId'),
           headers: {"Content-Type": "application/json"},
           body: jsonEncode({'user_id': userId}),
         );

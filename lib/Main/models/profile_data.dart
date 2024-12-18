@@ -14,12 +14,12 @@ class ProfileData {
     String? profileImagePath = json['profileImage'];
     if (profileImagePath != null && !profileImagePath.startsWith('http')) {
       // Construye la URL completa si es necesario (ajusta la URL base a tu entorno)
-      profileImagePath = 'http://localhost:3000/' + profileImagePath.replaceAll('\\', '/');
+      profileImagePath = 'http://54.232.83.174:3000/' + profileImagePath.replaceAll('\\', '/');
     }
 
     return ProfileData(
       email: json['email'],
-      hierarchicalLevel: json['funcyinteract'].toString(),
+      hierarchicalLevel: json['hierarchicalLevel'].toString(),
       profileImage: profileImagePath,
     );
   }

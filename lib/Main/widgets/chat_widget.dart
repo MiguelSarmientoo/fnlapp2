@@ -117,7 +117,7 @@ class ChatWidget extends StatelessWidget {
 
       if (userId != null && token != null) {
         final response = await http.get(
-          Uri.parse('http://localhost:3000/api/datos/users/$userId'),
+          Uri.parse('http://54.232.83.174:3000/api/datos/users/$userId'),
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer $token',
@@ -154,7 +154,7 @@ class ChatWidget extends StatelessWidget {
   Future<void> _guardarMensaje(String contenido) async {
     try {
       await http.post(
-        Uri.parse('http://localhost:3000/api/guardarMensajeFromBot'),
+        Uri.parse('http://54.232.83.174:3000/api/guardarMensajeFromBot'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'content': contenido,
@@ -180,7 +180,7 @@ class ChatWidget extends StatelessWidget {
         return;
       }
 
-      final url = 'http://localhost:3000/api/users/$userId';
+      final url = 'http://54.232.83.174:3000/api/users/$userId';
       final response = await http.put(
         Uri.parse(url),
         headers: {

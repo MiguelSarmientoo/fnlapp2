@@ -13,6 +13,7 @@ import 'plan.dart';
 import './widgets/chat_widget.dart';
 import 'mitest.dart';
 import './ExitTest/exit_test_screen.dart';
+import 'package:fnlapp/Util/enums.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -20,7 +21,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String nivelEstres = "Cargando...";
+  NivelEstres nivelEstres = NivelEstres.desconocido;
   List<dynamic> programas = [];
   bool isLoading = true;
   int _selectedIndex = 0;
@@ -46,7 +47,9 @@ class _HomeScreenState extends State<HomeScreen> {
     if (startDate == null) {
       prefs.setInt('startDate', DateTime.now().millisecondsSinceEpoch);
     } else {
-      int elapsedDays = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(startDate)).inDays;
+      int elapsedDays = DateTime.now()
+          .difference(DateTime.fromMillisecondsSinceEpoch(startDate))
+          .inDays;
       if (elapsedDays >= 21) {
         setState(() {
           showExitTest = true;
@@ -149,7 +152,8 @@ class _HomeScreenState extends State<HomeScreen> {
             child: CustomNavigationBar(
               selectedIndex: _selectedIndex,
               onItemTapped: _onItemTapped,
-              showExitTest: showExitTest, // Pasa el estado de showExitTest al CustomNavigationBar
+              showExitTest:
+                  showExitTest, // Pasa el estado de showExitTest al CustomNavigationBar
             ),
           ),
         ],
@@ -167,98 +171,105 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> obtenerNivelEstresYProgramas() async {
-  int maxRetries = 8;
-  int retryCount = 0;
-  int waitTime = 1;
+    int maxRetries = 8;
+    int retryCount = 0;
+    int waitTime = 1;
 
-  try {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    userId = prefs.getInt('userId');
-    username = prefs.getString('username');
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      userId = prefs.getInt('userId');
+      username = prefs.getString('username');
 
-    if (userId != null) {
-      // Obtener el nivel de estrés
-      final responseNivel = await http.get(
-        Uri.parse('http://54.232.83.174:3000/api/userestresessions/$userId/nivel'),
-      );
-
-      if (responseNivel.statusCode == 200) {
-        final responseData = jsonDecode(responseNivel.body);
-        int estresNivelId = responseData['estres_nivel_id'];
-
-        print('Nivel de estrés obtenido: $estresNivelId'); // Verifica que los datos se obtienen
-
-        setState(() {
-          nivelEstres = _mapNivelEstres(estresNivelId);
-        });
-      } else {
-        setState(() {
-          nivelEstres = "Error al obtener el nivel de estrés";
-        });
-        return;
-      }
-
-      // Intentar obtener los programas con reintentos
-      while (retryCount < maxRetries) {
-        final responseProgramas = await http.post(
-          Uri.parse('http://54.232.83.174:3000/api/userprograma/getprogramcompleto/$userId'),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({'user_id': userId}),
+      if (userId != null) {
+        // Obtener el nivel de estrés
+        final responseNivel = await http.get(
+          Uri.parse(
+              'http://54.232.83.174:3000/api/userestresessions/$userId/nivel'),
         );
 
-        if (responseProgramas.statusCode == 200) {
-          final responseData = jsonDecode(responseProgramas.body);
-          final List<dynamic> programasData = responseData['userProgramas']; // Accede a la clave 'userProgramas'
+        if (responseNivel.statusCode == 200) {
+          final responseData = jsonDecode(responseNivel.body);
+          int estresNivelId = responseData['estres_nivel_id'];
 
-          print('Programas obtenidos: $programasData'); // Verifica los datos recibidos
+          print(
+              'Nivel de estrés obtenido: $estresNivelId'); // Verifica que los datos se obtienen
 
           setState(() {
-            programas = programasData;
+            nivelEstres = _mapNivelEstres(estresNivelId);
+          });
+        } else {
+          setState(() {
+            // nivelEstres = "Error al obtener el nivel de estrés";
+            nivelEstres = NivelEstres.desconocido;
+          });
+          return;
+        }
+
+        // Intentar obtener los programas con reintentos
+        while (retryCount < maxRetries) {
+          final responseProgramas = await http.post(
+            Uri.parse(
+                'http://54.232.83.174:3000/api/userprograma/getprogramcompleto/$userId'),
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode({'user_id': userId}),
+          );
+
+          if (responseProgramas.statusCode == 200) {
+            final responseData = jsonDecode(responseProgramas.body);
+            final List<dynamic> programasData = responseData[
+                'userProgramas']; // Accede a la clave 'userProgramas'
+
+            print(
+                'Programas obtenidos: $programasData'); // Verifica los datos recibidos
+
+            setState(() {
+              programas = programasData;
+              isLoading = false;
+            });
+            break; // Salir del ciclo si la solicitud fue exitosa
+          } else {
+            retryCount++;
+            print('Intento ${retryCount}: Error en la obtención de programas');
+            await Future.delayed(Duration(seconds: waitTime));
+            waitTime *= 2; // Incrementa el tiempo de espera
+          }
+        }
+
+        // Si no se obtuvieron programas después de los intentos
+        if (retryCount == maxRetries) {
+          setState(() {
+            // nivelEstres = "No se encontraron programas después de varios intentos";
+            nivelEstres = NivelEstres.desconocido;
             isLoading = false;
           });
-          break; // Salir del ciclo si la solicitud fue exitosa
-        } else {
-          retryCount++;
-          print('Intento ${retryCount}: Error en la obtención de programas');
-          await Future.delayed(Duration(seconds: waitTime));
-          waitTime *= 2; // Incrementa el tiempo de espera
         }
-      }
-
-      // Si no se obtuvieron programas después de los intentos
-      if (retryCount == maxRetries) {
+      } else {
         setState(() {
-          nivelEstres = "No se encontraron programas después de varios intentos";
+          // nivelEstres = "Usuario no encontrado";
+          nivelEstres = NivelEstres.desconocido;
           isLoading = false;
         });
       }
-    } else {
+    } catch (e) {
       setState(() {
-        nivelEstres = "Usuario no encontrado";
+        // nivelEstres = "Error al cargar";
+        nivelEstres = NivelEstres.desconocido;
         isLoading = false;
       });
+      print("Error al obtener los programas: $e");
     }
-  } catch (e) {
-    setState(() {
-      nivelEstres = "Error al cargar";
-      isLoading = false;
-    });
-    print("Error al obtener los programas: $e");
   }
-}
 
-
-
-  String _mapNivelEstres(int nivelId) {
+  NivelEstres _mapNivelEstres(int nivelId) {
     switch (nivelId) {
       case 1:
-        return "LEVE";
+        return NivelEstres.leve;
       case 2:
-        return "MODERADO";
+        return NivelEstres.moderado;
       case 3:
-        return "ALTO";
+        return NivelEstres.alto;
       default:
-        return "DESCONOCIDO";
+        return NivelEstres.desconocido;
     }
   }
 }

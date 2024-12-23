@@ -3,6 +3,7 @@ import 'package:fnlapp/Util/enums.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert'; // Importa esta librería para usar json.decode
 import 'package:fnlapp/Main/step_screen.dart';
+import 'package:intl/intl.dart';
 
 class PlanScreen extends StatelessWidget {
   final NivelEstres nivelEstres;
@@ -13,6 +14,229 @@ class PlanScreen extends StatelessWidget {
       {required this.nivelEstres,
       required this.isLoading,
       required this.programas});
+
+  bool isProgramUnlocked(dynamic programa) {
+    if (programa['start_date'] != null) {
+      DateTime temp = DateTime.parse(programa['start_date']).toLocal();
+      DateTime date = DateTime(temp.year, temp.month, temp.day);
+      bool isRightDay = DateTime.now().isAfter(date);
+      return isRightDay;
+    } else {
+      return false;
+    }
+  }
+
+  Expanded buildProgramView(dynamic programa, BuildContext context,
+      Color backgroundColor, Color textColor) {
+    if (isProgramUnlocked(programa)) {
+      return Expanded(
+        child: Container(
+          width: 350,
+          margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+          padding: EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 255, 255, 255),
+            borderRadius: BorderRadius.circular(12.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.3),
+                spreadRadius: 2,
+                blurRadius: 6,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                programa['nombre_tecnica'] ?? 'Sin nombre',
+                style: GoogleFonts.poppins(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black),
+              ),
+              SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: Text(
+                      programa['descripcion'] ?? '',
+                      style: GoogleFonts.poppins(
+                          fontSize: 14.0, color: Colors.black87),
+                    ),
+                  ),
+                  programa['completed_date'] == null
+                      ? GestureDetector(
+                          onTap: () {
+                            dynamic stepsData = programa['guia'];
+                            List<dynamic> steps;
+
+                            if (stepsData is String) {
+                              steps = json.decode(stepsData);
+                            } else {
+                              steps = stepsData;
+                            }
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => StepScreen(
+                                  steps: List<String>.from(json.decode(programa[
+                                      'guia'])), // Convertimos el JSON a una lista de String
+                                  tecnicaNombre: programa['nombre_tecnica'],
+                                  dia: int.tryParse(
+                                          programa['dia'].toString()) ??
+                                      0,
+                                  userId: int.tryParse(
+                                          programa['user_id'].toString()) ??
+                                      0,
+                                  tecnicaId:
+                                      int.tryParse(programa['id'].toString()) ??
+                                          0,
+                                ),
+                              ),
+                            );
+                          },
+                          child: CircleAvatar(
+                            backgroundColor: Color.fromARGB(255, 237, 221, 255),
+                            radius: 24,
+                            child: Icon(Icons.play_arrow,
+                                size: 28,
+                                color: Color.fromARGB(255, 75, 21, 141)),
+                          ),
+                        )
+                      : CircleAvatar(
+                          backgroundColor: Color.fromARGB(255, 15, 178, 0),
+                          radius: 24,
+                          child: Icon(Icons.check,
+                              size: 28,
+                              color: Color.fromARGB(255, 255, 255, 255)),
+                        ),
+                ],
+              ),
+              SizedBox(height: 12),
+              Row(
+                children: [
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: Color.fromARGB(255, 240, 240, 240),
+                        radius: 15,
+                        child: Icon(Icons.headset,
+                            color: Color.fromARGB(255, 103, 21, 141), size: 18),
+                      ),
+                      Positioned(
+                        top: -4,
+                        right: -4,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.green,
+                          radius: 8,
+                          child:
+                              Icon(Icons.check, color: Colors.white, size: 9),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(width: 6),
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                    decoration: BoxDecoration(
+                      color: backgroundColor,
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Se ajusta el texto para que se acomode en varias líneas si es necesario
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                              maxWidth: 180), // Controlamos el ancho máximo
+                          child: Text(
+                            programa['tipo_tecnica'],
+                            style: GoogleFonts.poppins(
+                                fontSize: 12.0,
+                                fontWeight: FontWeight.w400,
+                                color: textColor),
+                            maxLines:
+                                2, // Si el texto es largo, se ajusta en dos líneas como máximo
+                            overflow: TextOverflow
+                                .ellipsis, // Si sigue siendo largo, muestra "..."
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      return Expanded(
+        child: Container(
+          width: 350,
+          margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+          padding: EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: const Color(0xFF6e848e),
+            borderRadius: BorderRadius.circular(12.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.3),
+                spreadRadius: 2,
+                blurRadius: 6,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                programa['nombre_tecnica'] ?? 'Sin nombre',
+                style: GoogleFonts.poppins(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    color: const Color.fromARGB(255, 255, 255, 255)),
+              ),
+              SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: Text(
+                      programa['start_date'] == null
+                          ? 'Esta lección se desbloqueará al día siguiente de haber completado la anterior.'
+                          : 'Esta lección se desbloqueará el ${DateFormat('dd/MM/yyyy').format(DateTime.parse(programa['start_date']).toLocal())}',
+                      style: GoogleFonts.poppins(
+                          fontSize: 14.0,
+                          color: const Color.fromARGB(255, 255, 255, 255)),
+                    ),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Color.fromARGB(255, 255, 255, 255),
+                    radius: 24,
+                    child: Icon(
+                        programa['start_date'] == null
+                            ? Icons.lock
+                            : Icons.lock_clock_rounded,
+                        size: 28,
+                        color: const Color(0xFF6e848e)),
+                  )
+                ],
+              ),
+              SizedBox(height: 12),
+            ],
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -172,145 +396,7 @@ class PlanScreen extends StatelessWidget {
             ),
           ),
           SizedBox(width: 16),
-          Expanded(
-            child: Container(
-              width: 350,
-              margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-              padding: EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
-                    spreadRadius: 2,
-                    blurRadius: 6,
-                    offset: Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    programa['nombre_tecnica'] ?? 'Sin nombre',
-                    style: GoogleFonts.poppins(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black),
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          programa['descripcion'] ?? '',
-                          style: GoogleFonts.poppins(
-                              fontSize: 14.0, color: Colors.black87),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          dynamic stepsData = programa['guia'];
-                          List<dynamic> steps;
-
-                          if (stepsData is String) {
-                            steps = json.decode(stepsData);
-                          } else {
-                            steps = stepsData;
-                          }
-
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => StepScreen(
-                                steps: List<String>.from(json.decode(programa[
-                                    'guia'])), // Convertimos el JSON a una lista de String
-                                tecnicaNombre: programa['nombre_tecnica'],
-                                dia: int.tryParse(programa['dia'].toString()) ??
-                                    0,
-                                userId: int.tryParse(
-                                        programa['user_id'].toString()) ??
-                                    0,
-                                tecnicaId:
-                                    int.tryParse(programa['id'].toString()) ??
-                                        0,
-                              ),
-                            ),
-                          );
-                        },
-                        child: CircleAvatar(
-                          backgroundColor: Color.fromARGB(255, 237, 221, 255),
-                          radius: 24,
-                          child: Icon(Icons.play_arrow,
-                              size: 28,
-                              color: Color.fromARGB(255, 75, 21, 141)),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          CircleAvatar(
-                            backgroundColor: Color.fromARGB(255, 240, 240, 240),
-                            radius: 15,
-                            child: Icon(Icons.headset,
-                                color: Color.fromARGB(255, 103, 21, 141),
-                                size: 18),
-                          ),
-                          Positioned(
-                            top: -4,
-                            right: -4,
-                            child: CircleAvatar(
-                              backgroundColor: Colors.green,
-                              radius: 8,
-                              child: Icon(Icons.check,
-                                  color: Colors.white, size: 9),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(width: 6),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 8.0, vertical: 8.0),
-                        decoration: BoxDecoration(
-                          color: backgroundColor,
-                          borderRadius: BorderRadius.circular(20.0),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Se ajusta el texto para que se acomode en varias líneas si es necesario
-                            ConstrainedBox(
-                              constraints: BoxConstraints(
-                                  maxWidth: 180), // Controlamos el ancho máximo
-                              child: Text(
-                                programa['tipo_tecnica'],
-                                style: GoogleFonts.poppins(
-                                    fontSize: 12.0,
-                                    fontWeight: FontWeight.w400,
-                                    color: textColor),
-                                maxLines:
-                                    2, // Si el texto es largo, se ajusta en dos líneas como máximo
-                                overflow: TextOverflow
-                                    .ellipsis, // Si sigue siendo largo, muestra "..."
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
+          buildProgramView(programa, context, backgroundColor, textColor)
         ],
       ),
     );

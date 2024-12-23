@@ -17,7 +17,7 @@ class FinalStepScreen extends StatefulWidget {
 
 class _FinalStepScreenState extends State<FinalStepScreen> {
   final TextEditingController commentController = TextEditingController();
-  double _rating = 0;
+  double _rating = 3;
   bool _isButtonEnabled = false;
   String _feedbackMessage = '';
 
@@ -161,11 +161,14 @@ class _FinalStepScreenState extends State<FinalStepScreen> {
                 ElevatedButton(
                   onPressed: _isButtonEnabled ? _sendData : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromARGB(255, 75, 21, 141),
-                  ),
+                      backgroundColor: Color.fromARGB(255, 75, 21, 141),
+                      disabledBackgroundColor: Color(0xFFe3dce4),
+                      foregroundColor: Colors.white,
+                      disabledForegroundColor:
+                          Color.fromARGB(255, 104, 104, 104)),
                   child: Text(
                     'Enviar',
-                    style: TextStyle(fontSize: 16.0, color: Colors.white),
+                    style: TextStyle(fontSize: 16.0),
                   ),
                 ),
                 SizedBox(height: 20),

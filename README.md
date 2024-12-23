@@ -1,16 +1,17 @@
-# fnlapp
+# Funcional Neuro Laboral - APP
 
-A new Flutter project.
+Aplicación en Flutter para FNL.
 
-## Getting Started
+Más información sobre el proyecto en: https://fnldigital.com/
 
-This project is a starting point for a Flutter application.
+## Setup
 
-A few resources to get you started if this is your first Flutter project:
+Una vez clonado el proyecto, crear el archivo 'config.dart' dentro de la carpeta 'lib'. Y copiar el siguiente código en ese archivo adaptando las URL para pruebas en local y producción según corresponda:
+```dart
+class Config {
+  static const String apiUrl = 'http://localhost:3000/api';
+  static const String imagenesUrl = 'http://localhost:3000/imagenes';
+}
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+El .gitignore ya excluye dicho archivo que tiene el rol de .env en este caso.

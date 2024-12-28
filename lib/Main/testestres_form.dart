@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fnlapp/Util/enums.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:fnlapp/SharedPreferences/sharedpreference.dart';
@@ -12,30 +13,32 @@ class TestEstresQuestionScreen extends StatefulWidget {
   const TestEstresQuestionScreen({Key? key}) : super(key: key);
 
   @override
-  _TestEstresQuestionScreenState createState() => _TestEstresQuestionScreenState();
+  _TestEstresQuestionScreenState createState() =>
+      _TestEstresQuestionScreenState();
 }
 
 class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
   int currentQuestionIndex = 0;
-  List<int> selectedOptions = List<int>.filled(23, 0); // Asigna un valor predeterminado (por ejemplo, 0)
+  List<int> selectedOptions = List<int>.filled(
+      23, 0); // Asigna un valor predeterminado (por ejemplo, 0)
 
   int? userId;
 
   @override
   void initState() {
     super.initState();
-    _loadUserId();  // Cargamos el ID del usuario al iniciar
+    _loadUserId(); // Cargamos el ID del usuario al iniciar
   }
 
   // Función para cargar el userId desde SharedPreferences
   Future<void> _loadUserId() async {
-    int? id = await getUserId();  // Función que obtienes de SharedPreferences
+    int? id = await getUserId(); // Función que obtienes de SharedPreferences
     setState(() {
       userId = id;
       if (userId == null) {
         print('Error: userId is null');
         return;
-      }else{
+      } else {
         print('Success: todo bien con el id');
       }
     });
@@ -44,7 +47,8 @@ class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
   // Función para seleccionar una opción
   void selectOption(int optionId) {
     setState(() {
-      selectedOptions[currentQuestionIndex] = optionId;  // Guarda la respuesta para la pregunta actual
+      selectedOptions[currentQuestionIndex] =
+          optionId; // Guarda la respuesta para la pregunta actual
     });
   }
 
@@ -56,7 +60,9 @@ class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Por favor selecciona una opción antes de continuar')),
+        SnackBar(
+            content:
+                Text('Por favor selecciona una opción antes de continuar')),
       );
     }
   }
@@ -87,12 +93,14 @@ class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
 
     // URLs de las APIs
     final url = Uri.parse('${Config.apiUrl}/guardarTestEstres');
-    final updateEstresUrl = Uri.parse('${Config.apiUrl}/userestresessions/assign');
+    final updateEstresUrl =
+        Uri.parse('${Config.apiUrl}/userestresessions/assign');
 
     // Construir el payload para guardar el test
     final Map<String, dynamic> data = {
       'user_id': userId,
-      for (int i = 0; i < selectedOptions.length; i++) 'pregunta_${i + 1}': selectedOptions[i],
+      for (int i = 0; i < selectedOptions.length; i++)
+        'pregunta_${i + 1}': selectedOptions[i],
       'estado': 'activo',
     };
 
@@ -101,7 +109,8 @@ class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
 
     try {
       // Obtener el gender_id del usuario
-      final genderResponse = await http.get(Uri.parse('${Config.apiUrl}/userResponses/$userId'));
+      final genderResponse =
+          await http.get(Uri.parse('${Config.apiUrl}/userResponses/$userId'));
       if (genderResponse.statusCode != 200) {
         print('Error al obtener el gender_id: ${genderResponse.statusCode}');
         print('Cuerpo de la respuesta: ${genderResponse.body}');
@@ -112,8 +121,9 @@ class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
       int genderId = userData.isNotEmpty ? userData[0]['gender_id'] ?? 1 : 1;
 
       // Calcular el nivel de estrés y su ID
-      final Map<String, dynamic> estresResult = _calcularNivelEstres(totalScore, genderId);
-      String nivelEstres = estresResult['nivel'];
+      final Map<String, dynamic> estresResult =
+          _calcularNivelEstres(totalScore, genderId);
+      NivelEstres nivelEstres = estresResult['nivel'];
       int estresNivelId = estresResult['id'];
 
       // Guardar el test en el backend
@@ -148,10 +158,11 @@ class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
       await _updateTestEstresBool();
 
       // Aquí puedes agregar la llamada a tu ruta del backend para crear el programa en paralelo
-      final generateReportUrl = Uri.parse('${Config.apiUrl}/userprograma/report/$userId');
+      final generateReportUrl =
+          Uri.parse('${Config.apiUrl}/userprograma/report/$userId');
       final Map<String, dynamic> reportData = {
         // Las respuestas a las preguntas, que deberían estar en selectedOptions
-        for (int i = 0; i < selectedOptions.length; i++) 
+        for (int i = 0; i < selectedOptions.length; i++)
           'pregunta_${i + 1}': selectedOptions[i]
       };
 
@@ -191,26 +202,27 @@ class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
 
   // Función para calcular el nivel de estrés
   Map<String, dynamic> _calcularNivelEstres(int totalScore, int genderId) {
-    String nivelEstres = '';
+    NivelEstres nivelEstres = NivelEstres.desconocido;
     int estresNivelId = 0;
 
     if (totalScore <= 92) {
-      nivelEstres = 'LEVE';
+      nivelEstres = NivelEstres.leve;
       estresNivelId = 1;
     } else if (totalScore > 92 && totalScore <= 138) {
       if (genderId == 1) {
-        nivelEstres = 'MODERADO';
+        nivelEstres = NivelEstres.moderado;
         estresNivelId = 2;
       } else if (genderId == 2) {
-        nivelEstres = totalScore <= 132 ? 'MODERADO' : 'ALTO';
+        nivelEstres =
+            totalScore <= 132 ? NivelEstres.moderado : NivelEstres.alto;
         estresNivelId = totalScore <= 132 ? 2 : 3;
       }
     } else if (totalScore > 138) {
       if (genderId == 1) {
-        nivelEstres = 'ALTO';
+        nivelEstres = NivelEstres.alto;
         estresNivelId = 3;
       } else if (genderId == 2) {
-        nivelEstres = 'ALTO';
+        nivelEstres = NivelEstres.leve;
         estresNivelId = 3;
       }
     }
@@ -249,187 +261,202 @@ class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
     }
   }
 
-
-
   @override
-Widget build(BuildContext context) {
-  // Verificación inicial para asegurarse de que 'questions' no esté vacío y que el índice esté en rango
-  if (questions.isEmpty || currentQuestionIndex >= questions.length) {
+  Widget build(BuildContext context) {
+    // Verificación inicial para asegurarse de que 'questions' no esté vacío y que el índice esté en rango
+    if (questions.isEmpty || currentQuestionIndex >= questions.length) {
+      return Scaffold(
+        body: Center(
+          child: Text(
+              "No hay preguntas disponibles"), // Mensaje de error si no hay preguntas
+        ),
+      );
+    }
+
+    // Asignar la pregunta actual solo si la lista de preguntas tiene contenido y el índice es válido
+    final question = questions[currentQuestionIndex];
+
     return Scaffold(
-      body: Center(
-        child: Text("No hay preguntas disponibles"), // Mensaje de error si no hay preguntas
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment
+                .center, // Centra los elementos en el eje horizontal
+            children: [
+              SizedBox(height: 20),
+
+              // Mostrar el número de pregunta actual
+              Text(
+                'Pregunta ${currentQuestionIndex + 1} de ${questions.length}',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              SizedBox(height: 20),
+
+              // Verificar que 'question['question']' no sea null antes de usarlo
+              if (question['question'] != null) ...[
+                Text(
+                  question['question']!,
+                  textAlign: TextAlign.center, // Centra el texto
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold), // Font más pequeño
+                ),
+              ] else ...[
+                Text(
+                  'Pregunta no disponible',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red),
+                ),
+              ],
+
+              // Descripción centrada y con margen superior
+              if (question['description'] != null) ...[
+                SizedBox(height: 12), // Margen superior
+                Text(
+                  question['description']!,
+                  textAlign: TextAlign.center, // Centra el texto
+                  style: TextStyle(fontSize: 16),
+                ),
+              ],
+              SizedBox(height: 20),
+
+              // Opciones de respuesta
+              Column(
+                children: List.generate(8, (index) {
+                  final optionKey = 'option${index + 1}';
+                  final detailKey = 'detail${index + 1}';
+                  final optionText = question[optionKey];
+                  final optionDetail = question[detailKey];
+
+                  // Verificar que cada opción no sea null antes de crear el widget
+                  if (optionText == null || optionDetail == null) {
+                    return SizedBox
+                        .shrink(); // No mostrar si la opción o detalle son null
+                  }
+
+                  bool isSelected =
+                      selectedOptions[currentQuestionIndex] == (index + 1);
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 5),
+                    child: GestureDetector(
+                      onTap: () => selectOption(
+                          index + 1), // Seleccionar opción al hacer clic
+                      child: AnimatedContainer(
+                        duration: const Duration(
+                            milliseconds: 300), // Animación al cambiar tamaño
+                        width: double
+                            .infinity, // Opción ocupa todo el ancho disponible
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 14, horizontal: 13),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? Color.fromARGB(255, 56, 30, 134)
+                              : const Color.fromARGB(255, 234, 234, 234),
+                          border: Border.all(
+                            color: isSelected
+                                ? Color.fromARGB(255, 40, 19, 105)
+                                : const Color.fromARGB(255, 212, 212, 212),
+                            width: 2.0,
+                          ),
+                          borderRadius:
+                              BorderRadius.circular(6), // Bordes más cuadrados
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              optionText,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight
+                                        .normal, // Negrita si está seleccionado
+                                color: isSelected ? Colors.white : Colors.black,
+                              ),
+                            ),
+                            if (isSelected) // Mostrar el detalle si la opción está seleccionada
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    top:
+                                        13.0), // Incrementar margen superior del detalle
+                                child: Text.rich(
+                                  TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: "Detalle: ",
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight
+                                              .bold, // Negrita para "Detalle:"
+                                          color: Colors.white,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: optionDetail,
+                                        style: const TextStyle(
+                                          fontStyle: FontStyle
+                                              .italic, // Texto en cursiva para el detalle
+                                          fontSize:
+                                              14, // Tamaño de fuente reducido
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+
+              SizedBox(height: 20),
+
+              // Botones de navegación
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if (currentQuestionIndex > 0)
+                    ElevatedButton(
+                      onPressed: goToPreviousQuestion,
+                      child: Text('Anterior'),
+                    ),
+                  if (currentQuestionIndex < questions.length - 1)
+                    ElevatedButton(
+                      onPressed: selectedOptions[currentQuestionIndex] != 0
+                          ? goToNextQuestion
+                          : null, // Deshabilitar si no hay selección
+                      child: Text('Siguiente'),
+                    ),
+                ],
+              ),
+              SizedBox(height: 20),
+
+              // Botón para enviar el test
+              Padding(
+                padding: const EdgeInsets.only(bottom: 15.0),
+                child: ElevatedButton(
+                  onPressed: (currentQuestionIndex == questions.length - 1 &&
+                          selectedOptions[currentQuestionIndex] != 0)
+                      ? submitTest
+                      : null, // Deshabilitar si no es la última pregunta o no hay selección
+                  child: Text('Enviar Test'),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
-
-  // Asignar la pregunta actual solo si la lista de preguntas tiene contenido y el índice es válido
-  final question = questions[currentQuestionIndex];
-
-  return Scaffold(
-    body: SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center, // Centra los elementos en el eje horizontal
-          children: [
-            SizedBox(height: 20),
-
-            // Mostrar el número de pregunta actual
-            Text(
-              'Pregunta ${currentQuestionIndex + 1} de ${questions.length}',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-            SizedBox(height: 20),
-
-            // Verificar que 'question['question']' no sea null antes de usarlo
-            if (question['question'] != null) ...[
-              Text(
-                question['question']!,
-                textAlign: TextAlign.center, // Centra el texto
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold), // Font más pequeño
-              ),
-            ] else ...[
-              Text(
-                'Pregunta no disponible',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red),
-              ),
-            ],
-
-            // Descripción centrada y con margen superior
-            if (question['description'] != null) ...[
-              SizedBox(height: 12), // Margen superior
-              Text(
-                question['description']!,
-                textAlign: TextAlign.center, // Centra el texto
-                style: TextStyle(fontSize: 16),
-              ),
-            ],
-            SizedBox(height: 20),
-
-            // Opciones de respuesta
-            Column(
-  children: List.generate(8, (index) {
-    final optionKey = 'option${index + 1}';
-    final detailKey = 'detail${index + 1}';
-    final optionText = question[optionKey];
-    final optionDetail = question[detailKey];
-
-    // Verificar que cada opción no sea null antes de crear el widget
-    if (optionText == null || optionDetail == null) {
-      return SizedBox.shrink(); // No mostrar si la opción o detalle son null
-    }
-
-    bool isSelected = selectedOptions[currentQuestionIndex] == (index + 1);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 5),
-      child: GestureDetector(
-        onTap: () => selectOption(index + 1), // Seleccionar opción al hacer clic
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300), // Animación al cambiar tamaño
-          width: double.infinity, // Opción ocupa todo el ancho disponible
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 13),
-          decoration: BoxDecoration(
-            color: isSelected ? Color.fromARGB(255, 56, 30, 134) : const Color.fromARGB(255, 234, 234, 234),
-            border: Border.all(
-              color: isSelected ? Color.fromARGB(255, 40, 19, 105) : const Color.fromARGB(255, 212, 212, 212),
-              width: 2.0,
-            ),
-            borderRadius: BorderRadius.circular(6), // Bordes más cuadrados
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                optionText,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, // Negrita si está seleccionado
-                  color: isSelected ? Colors.white : Colors.black,
-                ),
-              ),
-              if (isSelected) // Mostrar el detalle si la opción está seleccionada
-                Padding(
-                  padding: const EdgeInsets.only(top: 13.0), // Incrementar margen superior del detalle
-                  child: Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "Detalle: ",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold, // Negrita para "Detalle:"
-                            color: Colors.white,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                        TextSpan(
-                          text: optionDetail,
-                          style: const TextStyle(
-                            fontStyle: FontStyle.italic, // Texto en cursiva para el detalle
-                            fontSize: 14, // Tamaño de fuente reducido
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }),
-),
-
-
-
-
-
-
-            SizedBox(height: 20),
-
-            // Botones de navegación
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                if (currentQuestionIndex > 0)
-                  ElevatedButton(
-                    onPressed: goToPreviousQuestion,
-                    child: Text('Anterior'),
-                  ),
-
-                if (currentQuestionIndex < questions.length - 1)
-                  ElevatedButton(
-                    onPressed: selectedOptions[currentQuestionIndex] != 0
-                        ? goToNextQuestion
-                        : null, // Deshabilitar si no hay selección
-                    child: Text('Siguiente'),
-                  ),
-
-              ],
-            ),
-            SizedBox(height: 20),
-
-            // Botón para enviar el test
-            Padding(
-              padding: const EdgeInsets.only(bottom: 15.0),
-              child: ElevatedButton(
-                onPressed: (currentQuestionIndex == questions.length - 1 &&
-                        selectedOptions[currentQuestionIndex] != 0)
-                    ? submitTest
-                    : null, // Deshabilitar si no es la última pregunta o no hay selección
-                child: Text('Enviar Test'),
-              ),
-            ),
-
-          ],
-        ),
-      ),
-    ),
-  );
-}
-
-
 }

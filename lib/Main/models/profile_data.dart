@@ -1,3 +1,5 @@
+import 'package:fnlapp/config.dart';
+
 class ProfileData {
   final String email;
   final String hierarchicalLevel;
@@ -14,7 +16,8 @@ class ProfileData {
     String? profileImagePath = json['profileImage'];
     if (profileImagePath != null && !profileImagePath.startsWith('http')) {
       // Construye la URL completa si es necesario (ajusta la URL base a tu entorno)
-      profileImagePath = 'http://54.232.83.174:3000/' + profileImagePath.replaceAll('\\', '/');
+      profileImagePath =
+          Config.imagenesUrl + profileImagePath.replaceAll('\\', '/');
     }
 
     return ProfileData(

@@ -3,7 +3,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:http/http.dart' as http;
 import 'package:fnlapp/Main/home.dart';
 import 'dart:convert';
-import '../config.dart'; 
+import '../config.dart';
 
 class FinalStepScreen extends StatefulWidget {
   final int userId;
@@ -17,7 +17,7 @@ class FinalStepScreen extends StatefulWidget {
 
 class _FinalStepScreenState extends State<FinalStepScreen> {
   final TextEditingController commentController = TextEditingController();
-  double _rating = 0;
+  double _rating = 3;
   bool _isButtonEnabled = false;
   String _feedbackMessage = '';
 
@@ -29,7 +29,8 @@ class _FinalStepScreenState extends State<FinalStepScreen> {
 
   Future<void> _sendData() async {
     // Usa la URL base desde el archivo de configuración
-    final String apiUrl = "${Config.apiUrl}/userprograma/${widget.userId}/${widget.tecnicaId}";
+    final String apiUrl =
+        "${Config.apiUrl}/userprograma/${widget.userId}/${widget.tecnicaId}";
 
     final Map<String, dynamic> data = {
       "comentario": commentController.text,
@@ -88,12 +89,14 @@ class _FinalStepScreenState extends State<FinalStepScreen> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: NetworkImage('https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/login.png'),
+                image: NetworkImage(
+                    'https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/login.png'),
                 fit: BoxFit.cover,
               ),
             ),
             child: Container(
-              color: Colors.black.withOpacity(0.5), // Sombreado del 60% encima de la imagen
+              color: Colors.black
+                  .withOpacity(0.5), // Sombreado del 60% encima de la imagen
             ),
           ),
           Center(
@@ -124,10 +127,9 @@ class _FinalStepScreenState extends State<FinalStepScreen> {
                   allowHalfRating: false,
                   itemCount: 5,
                   itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                  itemBuilder: (context, _) => Icon(
-                    Icons.star,
-                    color: Colors.amber,
-                  ),
+                  unratedColor: Colors.blueGrey,
+                  itemBuilder: (context, _) =>
+                      Icon(Icons.star, color: Colors.amber),
                   onRatingUpdate: (rating) {
                     setState(() {
                       _rating = rating;
@@ -159,11 +161,14 @@ class _FinalStepScreenState extends State<FinalStepScreen> {
                 ElevatedButton(
                   onPressed: _isButtonEnabled ? _sendData : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromARGB(255, 75, 21, 141),
-                  ),
+                      backgroundColor: Color.fromARGB(255, 75, 21, 141),
+                      disabledBackgroundColor: Color(0xFFe3dce4),
+                      foregroundColor: Colors.white,
+                      disabledForegroundColor:
+                          Color.fromARGB(255, 104, 104, 104)),
                   child: Text(
                     'Enviar',
-                    style: TextStyle(fontSize: 16.0, color: Colors.white),
+                    style: TextStyle(fontSize: 16.0),
                   ),
                 ),
                 SizedBox(height: 20),

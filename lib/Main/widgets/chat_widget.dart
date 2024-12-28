@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fnlapp/config.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fnlapp/Funcy/screens/splash_screen.dart';
 import 'package:http/http.dart' as http;
@@ -11,7 +12,10 @@ class ChatWidget extends StatelessWidget {
   final String username;
   final Function(bool) onChatToggle;
 
-  ChatWidget({required this.userId, required this.username, required this.onChatToggle});
+  ChatWidget(
+      {required this.userId,
+      required this.username,
+      required this.onChatToggle});
 
   @override
   Widget build(BuildContext context) {
@@ -20,8 +24,10 @@ class ChatWidget extends StatelessWidget {
       body: Container(
         padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
         child: Column(
-          mainAxisSize: MainAxisSize.max, // Asegura que ocupe todo el espacio vertical
-          mainAxisAlignment: MainAxisAlignment.center, // Centra el contenido verticalmente
+          mainAxisSize:
+              MainAxisSize.max, // Asegura que ocupe todo el espacio vertical
+          mainAxisAlignment:
+              MainAxisAlignment.center, // Centra el contenido verticalmente
           children: [
             _buildLogo(), // Añadir el logo en la parte superior
             SizedBox(height: 20),
@@ -36,7 +42,8 @@ class ChatWidget extends StatelessWidget {
             SizedBox(height: 6),
             _buildChatMessage('¡Hola ${username}! 👋🐱'),
             SizedBox(height: 8),
-            _buildChatMessage('Soy Funcy y me gustaría saber cómo te encuentras el día de hoy'),
+            _buildChatMessage(
+                'Soy Funcy y me gustaría saber cómo te encuentras el día de hoy'),
             SizedBox(height: 10),
             Center(
               child: ElevatedButton(
@@ -44,7 +51,8 @@ class ChatWidget extends StatelessWidget {
                   await _startChat(context);
                 },
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
                   child: Text(
                     'Comencemos el chat',
                     style: GoogleFonts.poppins(
@@ -69,13 +77,13 @@ class ChatWidget extends StatelessWidget {
     );
   }
 
-Widget _buildLogo() {
-  return Image.network(
-    'http://funkyrecursos.s3.us-east-2.amazonaws.com/assets/logo_funcy_splash.png', // URL de la imagen en S3
-    height: 80, // Ajusta la altura según sea necesario
-    fit: BoxFit.contain,
-  );
-}
+  Widget _buildLogo() {
+    return Image.network(
+      'http://funkyrecursos.s3.us-east-2.amazonaws.com/assets/logo_funcy_splash.png', // URL de la imagen en S3
+      height: 80, // Ajusta la altura según sea necesario
+      fit: BoxFit.contain,
+    );
+  }
 
   Widget _buildChatMessage(String message) {
     return Container(
@@ -117,7 +125,7 @@ Widget _buildLogo() {
 
       if (userId != null && token != null) {
         final response = await http.get(
-          Uri.parse('http://54.232.83.174:3000/api/datos/users/$userId'),
+          Uri.parse('${Config.apiUrl}/datos/users/$userId'),
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer $token',
@@ -133,7 +141,8 @@ Widget _buildLogo() {
             return;
           } else if (funcyInteract == 0) {
             final String comentario1 = '¡Hola ${username}! 👋🐱';
-            final String comentario2 = 'Soy Funcy y me gustaría saber cómo te encuentras el día de hoy';
+            final String comentario2 =
+                'Soy Funcy y me gustaría saber cómo te encuentras el día de hoy';
 
             await _guardarMensaje(comentario1);
             await Future.delayed(Duration(seconds: 1));
@@ -154,7 +163,7 @@ Widget _buildLogo() {
   Future<void> _guardarMensaje(String contenido) async {
     try {
       await http.post(
-        Uri.parse('http://54.232.83.174:3000/api/guardarMensajeFromBot'),
+        Uri.parse('${Config.apiUrl}/guardarMensajeFromBot'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'content': contenido,
@@ -180,7 +189,7 @@ Widget _buildLogo() {
         return;
       }
 
-      final url = 'http://54.232.83.174:3000/api/users/$userId';
+      final url = '${Config.apiUrl}/users/$userId';
       final response = await http.put(
         Uri.parse(url),
         headers: {

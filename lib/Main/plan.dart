@@ -26,6 +26,17 @@ class PlanScreen extends StatelessWidget {
     }
   }
 
+  double getProgramPercentage() {
+    if (programas.isEmpty) {
+      return 0;
+    }
+    return (programas.where((x) => x['completed_date'] != null).length /
+                programas.length *
+                1000)
+            .round() /
+        10;
+  }
+
   Expanded buildProgramView(dynamic programa, BuildContext context,
       Color backgroundColor, Color textColor) {
     if (isProgramUnlocked(programa)) {
@@ -260,7 +271,6 @@ class PlanScreen extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF3F0071)),
                       ),
-                      SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -282,6 +292,30 @@ class PlanScreen extends StatelessWidget {
                           ),
                         ],
                       ),
+                      SizedBox(height: 20),
+                      !isLoading && programas.length > 0
+                          ? Column(children: [
+                              Text(
+                                "Progreso: ${getProgramPercentage()}%",
+                                style: GoogleFonts.poppins(
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF4A4A4A)),
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        width: 2, color: Colors.black)),
+                                child: LinearProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.greenAccent.shade700),
+                                    value: getProgramPercentage() / 100,
+                                    backgroundColor: Colors.white,
+                                    minHeight: 8),
+                                width: 300,
+                              ),
+                            ])
+                          : SizedBox(),
                       SizedBox(height: 20),
                       if (isLoading)
                         CircularProgressIndicator(

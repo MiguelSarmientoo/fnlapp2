@@ -214,12 +214,12 @@ class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
         estresNivelId = 2;
       } else if (genderId == 2) {
         nivelEstres =
-            totalScore <= 132 ? NivelEstres.moderado : NivelEstres.alto;
+            totalScore <= 132 ? NivelEstres.moderado : NivelEstres.severo;
         estresNivelId = totalScore <= 132 ? 2 : 3;
       }
     } else if (totalScore > 138) {
       if (genderId == 1) {
-        nivelEstres = NivelEstres.alto;
+        nivelEstres = NivelEstres.severo;
         estresNivelId = 3;
       } else if (genderId == 2) {
         nivelEstres = NivelEstres.leve;

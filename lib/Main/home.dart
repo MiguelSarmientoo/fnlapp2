@@ -266,7 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 2:
         return NivelEstres.moderado;
       case 3:
-        return NivelEstres.alto;
+        return NivelEstres.severo;
       default:
         return NivelEstres.desconocido;
     }

@@ -430,7 +430,7 @@ class _IndexScreenState extends State<IndexScreen> {
                   ),
                   Flexible(
                     child: Text(
-                      'Autorizo a la empresa a recopilar y utilizar información sobre mi actividad en aplicaciones y sitios web relacionados, así como datos necesarios para evaluar mi nivel de estrés, conforme a lo establecido en la Política de privacidad.',
+                      'Autorizo a la empresa a recopilar y utilizar información sobre mi actividad en aplicaciones y sitios web relacionados, así como datos necesarios para evaluar mi nivel de estrés y bienestar laboral, conforme a lo establecido en la Política de privacidad.',
                       style: TextStyle(fontSize: 16.0),
                     ),
                   ),

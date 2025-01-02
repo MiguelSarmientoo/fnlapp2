@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:fnlapp/Main/finalstepscreen.dart';
-import 'dart:convert';  // Para usar json.decode
+import 'dart:convert'; // Para usar json.decode
 
 class StepScreen extends StatefulWidget {
   final List<String> steps; // Recibir la lista de pasos como un JSON
@@ -28,7 +28,8 @@ class _StepScreenState extends State<StepScreen> {
   int currentStep = 0; // Índice del paso actual
   FlutterTts flutterTts = FlutterTts(); // Instancia de FlutterTts
   bool isPlaying = false; // Para controlar si se está reproduciendo el audio
-  TextEditingController commentController = TextEditingController(); // Controlador del input de comentario
+  TextEditingController commentController =
+      TextEditingController(); // Controlador del input de comentario
   double _rating = 0; // Valor inicial para el rating de estrellas
 
   // No es necesario declarar steps aquí, ya que widget.steps es directamente la lista
@@ -39,6 +40,11 @@ class _StepScreenState extends State<StepScreen> {
     super.initState();
     // No es necesario decodificar, ya que widget.steps ya es una lista
     // steps = json.decode(widget.steps); // Elimina esta línea
+    flutterTts.setCompletionHandler(() {
+      setState(() {
+        isPlaying = false; // Cambia el estado a no reproduciendo
+      });
+    });
   }
 
   // Función para leer el texto
@@ -46,6 +52,7 @@ class _StepScreenState extends State<StepScreen> {
     await flutterTts.setLanguage("es-ES"); // Establecer el idioma español
     await flutterTts.setPitch(1.0); // Tono de voz normal
     await flutterTts.speak(text); // Leer el texto
+
     setState(() {
       isPlaying = true; // Cambia el estado a reproduciendo
     });
@@ -108,9 +115,12 @@ class _StepScreenState extends State<StepScreen> {
                     child: Center(
                       child: currentStep < maxSteps
                           ? Text(
-                              widget.steps[currentStep],  // Usar widget.steps en lugar de steps
+                              widget.steps[
+                                  currentStep], // Usar widget.steps en lugar de steps
                               style: GoogleFonts.poppins(
-                                  fontSize: 22.0, color: Colors.white, height: 1.5),
+                                  fontSize: 22.0,
+                                  color: Colors.white,
+                                  height: 1.5),
                               textAlign: TextAlign.center,
                             )
                           : Container(), // Evita error si intentamos acceder a una vista más allá de los steps
@@ -122,7 +132,8 @@ class _StepScreenState extends State<StepScreen> {
                       children: [
                         Text(
                           'Día ${widget.dia.toString().padLeft(2, '0')}',
-                          style: GoogleFonts.poppins(fontSize: 14.0, color: Colors.white),
+                          style: GoogleFonts.poppins(
+                              fontSize: 14.0, color: Colors.white),
                         ),
                         Text(
                           widget.tecnicaNombre,
@@ -134,17 +145,19 @@ class _StepScreenState extends State<StepScreen> {
                       ],
                     ),
                   SizedBox(height: 20),
-                  
+
                   // Si es la última vista, mostrar el input y el botón "Enviar"
                   if (currentStep == maxSteps)
                     Center(
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center, // Centra verticalmente
+                        mainAxisAlignment:
+                            MainAxisAlignment.center, // Centra verticalmente
                         children: [
                           // Título y Rating
                           Text(
                             "Califica tu experiencia con las técnicas de relajación",
-                            style: GoogleFonts.poppins(fontSize: 16.0, color: Colors.white),
+                            style: GoogleFonts.poppins(
+                                fontSize: 16.0, color: Colors.white),
                             textAlign: TextAlign.center,
                           ),
                           SizedBox(height: 10),
@@ -168,14 +181,16 @@ class _StepScreenState extends State<StepScreen> {
                           SizedBox(height: 30),
                           // Input para el comentario
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
                             child: TextField(
                               controller: commentController,
                               decoration: InputDecoration(
                                 filled: true,
                                 fillColor: Colors.white,
                                 hintText: "Deja un comentario sobre la técnica",
-                                hintStyle: GoogleFonts.poppins(color: Colors.grey),
+                                hintStyle:
+                                    GoogleFonts.poppins(color: Colors.grey),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10.0),
                                 ),
@@ -186,19 +201,21 @@ class _StepScreenState extends State<StepScreen> {
                           SizedBox(height: 20),
                           // Botón "Enviar"
                           ElevatedButton(
-                            onPressed: _sendComment, // Llama a la función para enviar el comentario
+                            onPressed:
+                                _sendComment, // Llama a la función para enviar el comentario
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color.fromARGB(255, 75, 21, 141),
                             ),
                             child: Text(
                               'Enviar',
-                              style: GoogleFonts.poppins(fontSize: 16.0, color: Colors.white),
+                              style: GoogleFonts.poppins(
+                                  fontSize: 16.0, color: Colors.white),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  
+
                   // Botones de navegación y audio solo si es mensaje
                   if (currentStep < maxSteps)
                     Row(
@@ -208,16 +225,21 @@ class _StepScreenState extends State<StepScreen> {
                         if (currentStep > 0)
                           Container(
                             decoration: BoxDecoration(
-                              color: Color.fromARGB(255, 75, 21, 141), // Fondo circular
+                              color: Color.fromARGB(
+                                  255, 75, 21, 141), // Fondo circular
                               shape: BoxShape.circle,
                             ),
                             child: IconButton(
-                              icon: Icon(Icons.skip_previous, color: Colors.white),
+                              icon: Icon(Icons.skip_previous,
+                                  color: Colors.white),
                               iconSize: 28, // Tamaño del ícono ajustado
                               onPressed: () {
                                 setState(() {
                                   if (currentStep > 0) {
                                     currentStep--;
+                                    if (isPlaying) {
+                                      _stop();
+                                    }
                                   }
                                 });
                               },
@@ -225,50 +247,66 @@ class _StepScreenState extends State<StepScreen> {
                           ),
                         SizedBox(width: 20), // Separador
                         // Botón siguiente (mostrar en todas las vistas menos la final de comentarios)
-                        if (currentStep < maxSteps) // Mostrar botón "siguiente" hasta la sexta vista
+                        if (currentStep <
+                            maxSteps) // Mostrar botón "siguiente" hasta la sexta vista
                           Container(
                             decoration: BoxDecoration(
-                              color: Color.fromARGB(255, 75, 21, 141), // Fondo circular
+                              color: Color.fromARGB(
+                                  255, 75, 21, 141), // Fondo circular
                               shape: BoxShape.circle,
                             ),
                             child: IconButton(
                               icon: Icon(Icons.skip_next, color: Colors.white),
                               iconSize: 28, // Tamaño del ícono ajustado
-                            onPressed: () {
-                              setState(() {
+                              onPressed: () async {
                                 if (currentStep < maxSteps - 1) {
                                   currentStep++;
+                                  if (isPlaying) {
+                                    await _stop();
+                                    await Future.delayed(
+                                        Duration(milliseconds: 800));
+                                  }
+                                  _speak(widget.steps[currentStep]);
                                 } else {
+                                  if (isPlaying) {
+                                    _stop();
+                                  }
                                   // Ir a la pantalla de retroalimentación
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => FinalStepScreen(
-                                        userId: widget.userId, // Pasa el user_id
-                                        tecnicaId: widget.tecnicaId, // Pasa el tecnica_id
+                                        userId:
+                                            widget.userId, // Pasa el user_id
+                                        tecnicaId: widget
+                                            .tecnicaId, // Pasa el tecnica_id
                                       ),
                                     ),
                                   );
                                 }
-                              });
-                            },
+                                //we refresh the view
+                                setState(() {});
+                              },
+                            ),
                           ),
-                        ),
                         SizedBox(width: 20), // Separador
                         // Botón de audio (opcional para leer el texto en voz alta)
                         Container(
                           decoration: BoxDecoration(
-                            color: Color.fromARGB(255, 75, 21, 141), // Fondo circular
+                            color: Color.fromARGB(
+                                255, 75, 21, 141), // Fondo circular
                             shape: BoxShape.circle,
                           ),
                           child: IconButton(
-                            icon: Icon(isPlaying ? Icons.stop : Icons.volume_up, color: Colors.white),
+                            icon: Icon(isPlaying ? Icons.stop : Icons.volume_up,
+                                color: Colors.white),
                             iconSize: 28, // Tamaño del ícono ajustado
                             onPressed: () {
                               if (isPlaying) {
                                 _stop();
                               } else {
-                                _speak(widget.steps[currentStep]); // Lee el paso actual
+                                _speak(widget
+                                    .steps[currentStep]); // Lee el paso actual
                               }
                             },
                           ),
@@ -284,4 +322,3 @@ class _StepScreenState extends State<StepScreen> {
     );
   }
 }
-

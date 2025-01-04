@@ -4,12 +4,12 @@ class ProfileData {
   final String email;
   final String hierarchicalLevel;
   final String? profileImage;
-
-  ProfileData({
-    required this.email,
-    required this.hierarchicalLevel,
-    this.profileImage,
-  });
+  final int idEmpresa;
+  ProfileData(
+      {required this.email,
+      required this.hierarchicalLevel,
+      this.profileImage,
+      required this.idEmpresa});
 
   factory ProfileData.fromJson(Map<String, dynamic> json) {
     // Verifica si el perfil de la imagen es una URL completa o solo una ruta
@@ -21,14 +21,14 @@ class ProfileData {
     }
 
     return ProfileData(
-      email: json['email'],
-      hierarchicalLevel: json['hierarchicalLevel'].toString(),
-      profileImage: profileImagePath,
-    );
+        email: json['email'],
+        hierarchicalLevel: json['hierarchicalLevel'].toString(),
+        profileImage: profileImagePath,
+        idEmpresa: json['id_empresa']);
   }
 
   @override
   String toString() {
-    return 'ProfileData{profileImage: $profileImage, hierarchicalLevel: $hierarchicalLevel, email: $email}';
+    return 'ProfileData{profileImage: $profileImage, hierarchicalLevel: $hierarchicalLevel, email: $email, id_empresa: $idEmpresa}';
   }
 }

@@ -1,1 +1,1 @@
-enum NivelEstres { leve, moderado, alto, desconocido }
+enum NivelEstres { leve, moderado, severo, desconocido }

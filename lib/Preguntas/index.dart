@@ -7,10 +7,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:fnlapp/SharedPreferences/sharedpreference.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fnlapp/config.dart'; 
+import 'package:fnlapp/config.dart';
 import '../Util/api_service.dart';
 import '../Util/carga.dart';
-import '../Util/style.dart'; 
+import '../Util/style.dart';
 
 class IndexScreen extends StatefulWidget {
   final String username;
@@ -83,7 +83,8 @@ class _IndexScreenState extends State<IndexScreen> {
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token', // Aquí añadimos el token en el header
+          'Authorization':
+              'Bearer $token', // Aquí añadimos el token en el header
         },
         body: jsonEncode({'permisopoliticas': true}),
       );
@@ -110,7 +111,6 @@ class _IndexScreenState extends State<IndexScreen> {
       );
     }
   }
-
 
   void _handleAcceptAll() async {
     setState(() {
@@ -152,17 +152,21 @@ class _IndexScreenState extends State<IndexScreen> {
 
         if (category != null) {
           if (i == 0) {
-            questionCategories['age_range'] =
-                (category as List).map((item) => Map<String, dynamic>.from(item)).toList();
+            questionCategories['age_range'] = (category as List)
+                .map((item) => Map<String, dynamic>.from(item))
+                .toList();
           } else if (i == 1) {
-            questionCategories['level'] =
-                (category as List).map((item) => Map<String, dynamic>.from(item)).toList();
+            questionCategories['level'] = (category as List)
+                .map((item) => Map<String, dynamic>.from(item))
+                .toList();
           } else if (i == 2) {
-            questionCategories['responsability_level'] =
-                (category as List).map((item) => Map<String, dynamic>.from(item)).toList();
+            questionCategories['responsability_level'] = (category as List)
+                .map((item) => Map<String, dynamic>.from(item))
+                .toList();
           } else if (i == 3) {
-            questionCategories['gender'] =
-                (category as List).map((item) => Map<String, dynamic>.from(item)).toList();
+            questionCategories['gender'] = (category as List)
+                .map((item) => Map<String, dynamic>.from(item))
+                .toList();
           }
         }
       }
@@ -183,7 +187,7 @@ class _IndexScreenState extends State<IndexScreen> {
   // Función para manejar la selección de una opción
   void selectOption(String option) {
     setState(() {
-      selectedOption = option;  // Almacenar la opción seleccionada
+      selectedOption = option; // Almacenar la opción seleccionada
     });
   }
 
@@ -192,123 +196,121 @@ class _IndexScreenState extends State<IndexScreen> {
       // Guardar la opción seleccionada en el estado antes de pasar a la siguiente pregunta
       selectedAnswers[currentQuestionIndex] = selectedOption;
       setState(() {
-        selectedOption = null;  // Reiniciar la opción seleccionada para la siguiente pregunta
+        selectedOption =
+            null; // Reiniciar la opción seleccionada para la siguiente pregunta
         currentQuestionIndex++;
       });
     }
   }
-  
 
   void goToPreviousQuestion() {
     if (currentQuestionIndex > 0) {
       setState(() {
         currentQuestionIndex--;
-        selectedOption = selectedAnswers[currentQuestionIndex] ?? null;  // Recuperar la opción seleccionada si existe
+        selectedOption = selectedAnswers[currentQuestionIndex] ??
+            null; // Recuperar la opción seleccionada si existe
       });
     }
   }
 
-    Future<void> saveResponses() async {
-      // Verificar los valores de selectedAnswers
-      print('Selected Answers: $selectedAnswers');
+  Future<void> saveResponses() async {
+    // Verificar los valores de selectedAnswers
+    print('Selected Answers: $selectedAnswers');
 
-      if (selectedAnswers[3] == null) {
-        if (selectedOption != null) {
-          selectedAnswers[currentQuestionIndex] = selectedOption;
-        }
+    if (selectedAnswers[3] == null) {
+      if (selectedOption != null) {
+        selectedAnswers[currentQuestionIndex] = selectedOption;
       }
+    }
 
-      final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
-      final String createdAt = dateFormat.format(DateTime.now());
+    final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+    final String createdAt = dateFormat.format(DateTime.now());
 
-      final Map<String, dynamic> dataToSend = {
-        "user_id": userId,
-        "age_range_id": selectedAnswers[0],
-        "hierarchical_level_id": selectedAnswers[2],
-        "responsability_level_id": selectedAnswers[3],
-        "gender_id": selectedAnswers[1],
-        "created_at": createdAt,
-      };
+    final Map<String, dynamic> dataToSend = {
+      "user_id": userId,
+      "age_range_id": selectedAnswers[0],
+      "hierarchical_level_id": selectedAnswers[2],
+      "responsability_level_id": selectedAnswers[3],
+      "gender_id": selectedAnswers[1],
+      "created_at": createdAt,
+    };
 
-      print('Data to send: $dataToSend');
+    print('Data to send: $dataToSend');
 
-      try {
-        // Llamada a la API para guardar las respuestas
-        var response = await http.post(
-          Uri.parse('${Config.apiUrl}/guardarUserResponses'),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode(dataToSend),
-        );
+    try {
+      // Llamada a la API para guardar las respuestas
+      var response = await http.post(
+        Uri.parse('${Config.apiUrl}/guardarUserResponses'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(dataToSend),
+      );
 
-        if (response.statusCode == 201) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Respuestas guardadas exitosamente.')),
-          );
-
-          // Actualizar el campo userresponsebool utilizando la API existente
-          await _updateUserResponseBool();
-
-          // Navegar a la siguiente pantalla
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TestEstresScreen(),
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error al guardar respuestas.')),
-          );
-        }
-      } catch (e) {
-        print('Error al enviar respuestas: $e');
+      if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al enviar respuestas.')),
-        );
-      }
-    }
-
-    Future<void> _updateUserResponseBool() async {
-      try {
-        if (userId == null) {
-          print('No se encontró el ID del usuario.');
-          return;
-        }
-
-        String? token = await getToken(); // Obtener el token de SharedPreferences
-
-        if (token == null) {
-          print('No se encontró el token de autenticación.');
-          return;
-        }
-
-        final url = '${Config.apiUrl}/users/$userId';
-        final response = await http.put(
-          Uri.parse(url),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $token', // Token de autenticación
-          },
-          body: jsonEncode({'userresponsebool': true}), // Actualizar el campo
+          SnackBar(content: Text('Respuestas guardadas exitosamente.')),
         );
 
-        if (response.statusCode == 200) {
-          print('Campo userresponsebool actualizado correctamente.');
-          // Guardar en SharedPreferences
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setBool('userresponsebool', true);
-        } else {
-          print('Error al actualizar userresponsebool: ${response.statusCode}');
-        }
-      } catch (e) {
-        print('Error al actualizar userresponsebool: $e');
+        // Actualizar el campo userresponsebool utilizando la API existente
+        await _updateUserResponseBool();
+
+        // Navegar a la siguiente pantalla
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TestEstresScreen(),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al guardar respuestas.')),
+        );
       }
+    } catch (e) {
+      print('Error al enviar respuestas: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al enviar respuestas.')),
+      );
     }
+  }
 
+  Future<void> _updateUserResponseBool() async {
+    try {
+      if (userId == null) {
+        print('No se encontró el ID del usuario.');
+        return;
+      }
 
+      String? token = await getToken(); // Obtener el token de SharedPreferences
 
+      if (token == null) {
+        print('No se encontró el token de autenticación.');
+        return;
+      }
+
+      final url = '${Config.apiUrl}/users/$userId';
+      final response = await http.put(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token', // Token de autenticación
+        },
+        body: jsonEncode({'userresponsebool': true}), // Actualizar el campo
+      );
+
+      if (response.statusCode == 200) {
+        print('Campo userresponsebool actualizado correctamente.');
+        // Guardar en SharedPreferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('userresponsebool', true);
+      } else {
+        print('Error al actualizar userresponsebool: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error al actualizar userresponsebool: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -325,340 +327,354 @@ class _IndexScreenState extends State<IndexScreen> {
     );
   }
 
- Widget _buildWelcomeScreen() {
-  return Column(
-    children: [
-      Padding(
-        padding: const EdgeInsets.only(top: 40.0, left: 20.0, right: 20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,  // Centramos el texto horizontalmente
-          children: [
-            Text(
-              'Tu privacidad nos importa',
-              style: TextStyle(
-                fontSize: 22.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-              textAlign: TextAlign.center,  // Aseguramos el centrado del texto
-            ),
-            SizedBox(height: 20.0),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Checkbox(
-                  value: acceptedProcessing,
-                  activeColor: Color(0xFF5027D0),
-                  onChanged: (value) {
-                    setState(() {
-                      acceptedProcessing = value ?? false;
-                      _updateAgreedToAll();
-                    });
-                  },
-                ),
-                Flexible(
-                  child: Text.rich(
-                    TextSpan(
-                      text: 'Acepto la ',
-                      style: TextStyle(fontSize: 16.0, color: Colors.black),
-                      children: [
-                        TextSpan(
-                          text: 'Política de privacidad',
-                          style: TextStyle(color: Colors.red),
-                          recognizer: TapGestureRecognizer()..onTap = () {},
-                        ),
-                        TextSpan(text: ' y las '),
-                        TextSpan(
-                          text: 'Condiciones de uso',
-                          style: TextStyle(color: Colors.red),
-                          recognizer: TapGestureRecognizer()..onTap = () {},
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 10.0),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Checkbox(
-                  value: acceptedProcessing,
-                  activeColor: Color(0xFF5027D0),
-                  onChanged: (value) {
-                    setState(() {
-                      acceptedProcessing = value ?? false;
-                      _updateAgreedToAll();
-                    });
-                  },
-                ),
-                Flexible(
-                  child: Text.rich(
-                    TextSpan(
-                      text:
-                          'Acepto el procesamiento de mis datos personales de salud con el fin de facilitar las funciones de la aplicación. Ver más en la ',
-                      style: TextStyle(fontSize: 16.0, color: Colors.black),
-                      children: [
-                        TextSpan(
-                          text: 'Política de privacidad',
-                          style: TextStyle(color: Colors.red),
-                          recognizer: TapGestureRecognizer()..onTap = () {},
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 10.0),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Checkbox(
-                  value: acceptedTracking,
-                  activeColor: Color(0xFF5027D0),
-                  onChanged: (value) {
-                    setState(() {
-                      acceptedTracking = value ?? false;
-                      _updateAgreedToAll();
-                    });
-                  },
-                ),
-                Flexible(
-                  child: Text(
-                    'Autorizo a XX a efectuar un seguimiento de mi actividad en aplicaciones y sitios web propiedad de otras empresas y a que se pueda recibir información sobre mi grupo de edad, estado de suscripción, y confirmación de uso de la aplicación, como se detalla en la Política de privacidad.',
-                    style: TextStyle(fontSize: 16.0),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-      Spacer(),
-      Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  acceptedProcessing = true;
-                  acceptedTracking = true;
-                  _updateAgreedToAll();
-                });
-              },
-              child: Text(
-                'Aceptar todo',
+  Widget _buildWelcomeScreen() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 40.0, left: 20.0, right: 20.0),
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.center, // Centramos el texto horizontalmente
+            children: [
+              Text(
+                'Tu privacidad nos importa',
                 style: TextStyle(
-                  fontSize: 16.0,
+                  fontSize: 22.0,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF5027D0),
+                  color: Colors.black,
                 ),
+                textAlign: TextAlign.center, // Aseguramos el centrado del texto
               ),
-            ),
-            SizedBox(height: 10.0),
-            ElevatedButton(
-              onPressed: agreedToAll
-                  ? () {
-                      _handleAcceptAll();
+              SizedBox(height: 20.0),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Checkbox(
+                    value: acceptedProcessing,
+                    activeColor: Color(0xFF5027D0),
+                    onChanged: (value) {
                       setState(() {
-                        agreedToTerms = true;
-                        currentQuestionIndex = 0;
+                        acceptedProcessing = value ?? false;
+                        _updateAgreedToAll();
                       });
-                    }
-                  : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF5027D0),
-                padding: EdgeInsets.symmetric(horizontal: 100, vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
+                    },
+                  ),
+                  Flexible(
+                    child: Text.rich(
+                      TextSpan(
+                        text: 'Acepto la ',
+                        style: TextStyle(fontSize: 16.0, color: Colors.black),
+                        children: [
+                          TextSpan(
+                            text: 'Política de privacidad',
+                            style: TextStyle(color: Colors.red),
+                            recognizer: TapGestureRecognizer()..onTap = () {},
+                          ),
+                          TextSpan(text: ' y las '),
+                          TextSpan(
+                            text: 'Condiciones de uso',
+                            style: TextStyle(color: Colors.red),
+                            recognizer: TapGestureRecognizer()..onTap = () {},
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              child: Text(
-                'Continuar',
-                style: TextStyle(
-                  fontSize: 16.0,
-                  color: agreedToAll ? Colors.white : Colors.grey, // Cambia el color del texto según el estado
-                ),
+              SizedBox(height: 10.0),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Checkbox(
+                    value: acceptedProcessing,
+                    activeColor: Color(0xFF5027D0),
+                    onChanged: (value) {
+                      setState(() {
+                        acceptedProcessing = value ?? false;
+                        _updateAgreedToAll();
+                      });
+                    },
+                  ),
+                  Flexible(
+                    child: Text.rich(
+                      TextSpan(
+                        text:
+                            'Acepto el procesamiento de mis datos personales de salud con el fin de facilitar las funciones de la aplicación. Ver más en la ',
+                        style: TextStyle(fontSize: 16.0, color: Colors.black),
+                        children: [
+                          TextSpan(
+                            text: 'Política de privacidad',
+                            style: TextStyle(color: Colors.red),
+                            recognizer: TapGestureRecognizer()..onTap = () {},
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
+              SizedBox(height: 10.0),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Checkbox(
+                    value: acceptedTracking,
+                    activeColor: Color(0xFF5027D0),
+                    onChanged: (value) {
+                      setState(() {
+                        acceptedTracking = value ?? false;
+                        _updateAgreedToAll();
+                      });
+                    },
+                  ),
+                  Flexible(
+                    child: Text(
+                      'Autorizo a la empresa a recopilar y utilizar información sobre mi actividad en aplicaciones y sitios web relacionados, así como datos necesarios para evaluar mi nivel de estrés y bienestar laboral, conforme a lo establecido en la Política de privacidad.',
+                      style: TextStyle(fontSize: 16.0),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-      ),
-    ],
-  );
-}
-
-
-
-Widget _buildQuestionsScreen() {
-  String currentCategoryKey;
-
-  // Selección de la categoría según el índice de la pregunta
-  switch (currentQuestionIndex) {
-    case 0:
-      currentCategoryKey = 'age_range';
-      break;
-    case 1:
-      currentCategoryKey = 'gender';
-      break;
-    case 2:
-      currentCategoryKey = 'level';
-      break;
-    case 3:
-      currentCategoryKey = 'responsability_level';
-      break;
-    default:
-      currentCategoryKey = 'age_range';
-  }
-
-  // Obtenemos las preguntas de la categoría actual
-  var currentCategoryQuestions = questionCategories[currentCategoryKey];
-
-  // Si no hay preguntas disponibles, mostramos un mensaje
-  if (currentCategoryQuestions == null || currentCategoryQuestions.isEmpty) {
-    return Center(
-      child: Text("No se encontraron preguntas para esta categoría."),
+        Spacer(),
+        Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    acceptedProcessing = true;
+                    acceptedTracking = true;
+                    _updateAgreedToAll();
+                  });
+                },
+                child: Text(
+                  'Aceptar todo',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF5027D0),
+                  ),
+                ),
+              ),
+              SizedBox(height: 10.0),
+              ElevatedButton(
+                onPressed: agreedToAll
+                    ? () {
+                        _handleAcceptAll();
+                        setState(() {
+                          agreedToTerms = true;
+                          currentQuestionIndex = 0;
+                        });
+                      }
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF5027D0),
+                  padding: EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: Text(
+                  'Continuar',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: agreedToAll
+                        ? Colors.white
+                        : Colors
+                            .grey, // Cambia el color del texto según el estado
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
-  // Definir el texto de la pregunta según el índice
-  String preguntaTexto = '';
-  switch (currentQuestionIndex) {
-    case 0:
-      preguntaTexto = '¿Cuál es tu rango de edad?';
-      break;
-    case 1:
-      preguntaTexto = '¿Cuál es tu género?';
-      break;
-    case 2:
-      preguntaTexto = '¿Cuál es tu posición en la organización?';
-      break;
-    case 3:
-      preguntaTexto = '¿Cuál es tu nivel de responsabilidad?';
-      break;
-  }
+  Widget _buildQuestionsScreen() {
+    String currentCategoryKey;
 
-  return Column(
-    children: [
-      // Contenido en la parte superior, con reducción de espacio
-      Padding(
-        padding: const EdgeInsets.only(top: 40.0), // Espacio superior ajustado
-        child: Column(
-          children: [
-            Text(
-              'Pregunta ${currentQuestionIndex + 1} de 4',
-              style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-            ),
-            if (currentQuestionIndex == 0) // Mensaje especial solo en la primera pregunta
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text(
-                  'Te damos la bienvenida a FNL',
-                  style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            SizedBox(height: 8.0), // Espacio entre los textos
-            Text(
-              preguntaTexto, // Texto dinámico de la pregunta
-              style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 10), // Espacio antes de las opciones
-          ],
-        ),
-      ),
+    // Selección de la categoría según el índice de la pregunta
+    switch (currentQuestionIndex) {
+      case 0:
+        currentCategoryKey = 'age_range';
+        break;
+      case 1:
+        currentCategoryKey = 'gender';
+        break;
+      case 2:
+        currentCategoryKey = 'level';
+        break;
+      case 3:
+        currentCategoryKey = 'responsability_level';
+        break;
+      default:
+        currentCategoryKey = 'age_range';
+    }
 
-      // Opciones centradas en la pantalla
-      Expanded(
-        flex: 2,
-        child: Center(
-          child: _buildQuestionField(currentCategoryQuestions), // Campo de respuesta dinámico
-        ),
-      ),
+    // Obtenemos las preguntas de la categoría actual
+    var currentCategoryQuestions = questionCategories[currentCategoryKey];
 
-      // Botones en la parte inferior
-      Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            if (currentQuestionIndex > 0) // Botón de retroceso
-              TextButton(
-                onPressed: goToPreviousQuestion,
-                child: Text(
-                  'Volver',
-                  style: TextStyle(color: Color(0xFF5027D0), fontWeight: FontWeight.w600),
-                ),
-              ),
-            Spacer(),
-            // Botón de siguiente o finalización según el índice de pregunta
-            TextButton(
-              onPressed: currentQuestionIndex < 3
-                  ? goToNextQuestion
-                  : saveResponses, // Guardar respuestas si es la última pregunta
-              child: Text(
-                currentQuestionIndex < 3 ? 'Siguiente' : 'Finalizar',
-                style: TextStyle(color: Color(0xFF5027D0), fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
-        ),
-      ),
-    ],
-  );
-}
-
-  Widget _buildQuestionField(List<Map<String, dynamic>> questions) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          for (var question in questions)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.85,
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: selectedOption == question.values.first.toString()
-                        ? Colors.white
-                        : Color(0xFF5027D0),
-                    side: BorderSide(
-                      color: selectedOption == question.values.first.toString()
-                          ? Color(0xFF5027D0)
-                          : Colors.transparent,
-                      width: 2.0,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                    ),
-                    padding: EdgeInsets.symmetric(vertical: 20.0),
-                  ),
-                  onPressed: () {
-                    selectOption(question.values.first.toString());
-                  },
-                  child: Text(
-                    question.containsKey('age_range') ? question['age_range'].toString() :
-                    question.containsKey('level') ? question['level'].toString() :
-                    question.containsKey('gender') ? question['gender'].toString() :
-                    question.containsKey('responsability_level') ? question['responsability_level'].toString() : 'Valor no disponible',
-                    style: TextStyle(
-                      fontSize: 16.0,
-                      color: selectedOption == question.values.first.toString()
-                          ? Color(0xFF5027D0)
-                          : Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
+    // Si no hay preguntas disponibles, mostramos un mensaje
+    if (currentCategoryQuestions == null || currentCategoryQuestions.isEmpty) {
+      return Center(
+        child: Text("No se encontraron preguntas para esta categoría."),
       );
     }
+
+    // Definir el texto de la pregunta según el índice
+    String preguntaTexto = '';
+    switch (currentQuestionIndex) {
+      case 0:
+        preguntaTexto = '¿Cuál es tu rango de edad?';
+        break;
+      case 1:
+        preguntaTexto = '¿Cuál es tu género?';
+        break;
+      case 2:
+        preguntaTexto = '¿Cuál es tu posición en la organización?';
+        break;
+      case 3:
+        preguntaTexto = '¿Cuál es tu nivel de responsabilidad?';
+        break;
+    }
+
+    return Column(
+      children: [
+        // Contenido en la parte superior, con reducción de espacio
+        Padding(
+          padding:
+              const EdgeInsets.only(top: 40.0), // Espacio superior ajustado
+          child: Column(
+            children: [
+              Text(
+                'Pregunta ${currentQuestionIndex + 1} de 4',
+                style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+              ),
+              if (currentQuestionIndex ==
+                  0) // Mensaje especial solo en la primera pregunta
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    'Te damos la bienvenida a FNL',
+                    style:
+                        TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              SizedBox(height: 8.0), // Espacio entre los textos
+              Text(
+                preguntaTexto, // Texto dinámico de la pregunta
+                style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 10), // Espacio antes de las opciones
+            ],
+          ),
+        ),
+
+        // Opciones centradas en la pantalla
+        Expanded(
+          flex: 2,
+          child: Center(
+            child: _buildQuestionField(
+                currentCategoryQuestions), // Campo de respuesta dinámico
+          ),
+        ),
+
+        // Botones en la parte inferior
+        Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              if (currentQuestionIndex > 0) // Botón de retroceso
+                TextButton(
+                  onPressed: goToPreviousQuestion,
+                  child: Text(
+                    'Volver',
+                    style: TextStyle(
+                        color: Color(0xFF5027D0), fontWeight: FontWeight.w600),
+                  ),
+                ),
+              Spacer(),
+              // Botón de siguiente o finalización según el índice de pregunta
+              TextButton(
+                onPressed: currentQuestionIndex < 3
+                    ? goToNextQuestion
+                    : saveResponses, // Guardar respuestas si es la última pregunta
+                child: Text(
+                  currentQuestionIndex < 3 ? 'Siguiente' : 'Finalizar',
+                  style: TextStyle(
+                      color: Color(0xFF5027D0), fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuestionField(List<Map<String, dynamic>> questions) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        for (var question in questions)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.85,
+              child: OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  backgroundColor:
+                      selectedOption == question.values.first.toString()
+                          ? Colors.white
+                          : Color(0xFF5027D0),
+                  side: BorderSide(
+                    color: selectedOption == question.values.first.toString()
+                        ? Color(0xFF5027D0)
+                        : Colors.transparent,
+                    width: 2.0,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 20.0),
+                ),
+                onPressed: () {
+                  selectOption(question.values.first.toString());
+                },
+                child: Text(
+                  question.containsKey('age_range')
+                      ? question['age_range'].toString()
+                      : question.containsKey('level')
+                          ? question['level'].toString()
+                          : question.containsKey('gender')
+                              ? question['gender'].toString()
+                              : question.containsKey('responsability_level')
+                                  ? question['responsability_level'].toString()
+                                  : 'Valor no disponible',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: selectedOption == question.values.first.toString()
+                        ? Color(0xFF5027D0)
+                        : Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
 
   Widget _buildCheckBoxes() {
     return Column(

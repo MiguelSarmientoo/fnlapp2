@@ -19,7 +19,7 @@ class MiTestScreen extends StatelessWidget {
         imageUrl =
             'https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/moderado2.png';
         break;
-      case NivelEstres.alto:
+      case NivelEstres.severo:
         imageUrl =
             'https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/severo2.png';
         break;

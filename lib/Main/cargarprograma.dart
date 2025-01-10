@@ -26,10 +26,10 @@ class _CargarProgramaScreenState extends State<CargarProgramaScreen> {
 
   // Función para iniciar el progreso
   void _startLoading() {
-    Timer.periodic(Duration(milliseconds: 1200), (timer) {
-      // Cambiado a 1200 milisegundos (1.2 segundos)
+    Timer.periodic(Duration(milliseconds: 3700), (timer) {
+      // Cambiado a 3700 milisegundos (3.7 segundos)
       setState(() {
-        _progress += 1; // Incrementa en 1 cada 1.2 segundos
+        _progress += 1; // Incrementa en 1 cada 3.7 segundos
         if (_progress >= 100) {
           timer
               .cancel(); // Detiene el temporizador cuando el progreso llega al 100%

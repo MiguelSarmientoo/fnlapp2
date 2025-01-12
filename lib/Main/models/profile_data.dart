@@ -4,12 +4,14 @@ class ProfileData {
   final String email;
   final String hierarchicalLevel;
   final String? profileImage;
-  final int idEmpresa;
+  final int? idEmpresa;
+  String? nombreEmpresa;
   ProfileData(
       {required this.email,
       required this.hierarchicalLevel,
       this.profileImage,
-      required this.idEmpresa});
+      this.idEmpresa,
+      this.nombreEmpresa});
 
   factory ProfileData.fromJson(Map<String, dynamic> json) {
     // Verifica si el perfil de la imagen es una URL completa o solo una ruta

@@ -77,7 +77,12 @@ class _HomeScreenState extends State<HomeScreen> {
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
-        return ProfileData.fromJson(json.decode(response.body));
+        var profile = ProfileData.fromJson(json.decode(response.body));
+
+        var res = await http
+            .get(Uri.parse('${Config.apiUrl}/empresa/${profile.idEmpresa}'));
+        profile.nombreEmpresa = json.decode(res.body)['nombre'];
+        return profile;
       } else {
         print('Error: ${response.statusCode}');
         return null;

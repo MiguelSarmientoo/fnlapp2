@@ -45,7 +45,8 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _buildProfileInfo(double screenWidth) {
     return Container(
-      constraints: BoxConstraints(maxWidth: screenWidth * 0.85), // Porcentaje del ancho de pantalla
+      constraints: BoxConstraints(
+          maxWidth: screenWidth * 0.85), // Porcentaje del ancho de pantalla
       padding: EdgeInsets.all(screenWidth * 0.05), // Espaciado flexible
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -138,7 +139,11 @@ class ProfileScreen extends StatelessWidget {
       children: [
         _buildInfoRow('Correo:', profileData?.email ?? 'No disponible'),
         const SizedBox(height: 10),
-        _buildInfoRow('Nivel jerárquico:', profileData?.hierarchicalLevel ?? 'No disponible'),
+        _buildInfoRow('Nivel jerárquico:',
+            profileData?.hierarchicalLevel ?? 'No disponible'),
+        const SizedBox(height: 10),
+        _buildInfoRow(
+            'Empresa:', profileData?.nombreEmpresa ?? 'No disponible'),
       ],
     );
   }

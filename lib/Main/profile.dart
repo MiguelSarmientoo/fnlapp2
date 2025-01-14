@@ -175,7 +175,7 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildLogoutButton() {
     return ElevatedButton.icon(
       onPressed: () => onLogout(),
-      icon: const Icon(Icons.logout, size: 18),
+      icon: const Icon(Icons.logout, size: 18, color: Colors.white),
       label: Text(
         'Cerrar sesión',
         style: GoogleFonts.roboto(fontWeight: FontWeight.w500),

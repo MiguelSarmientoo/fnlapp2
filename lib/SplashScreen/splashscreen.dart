@@ -8,14 +8,14 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-
   @override
   void initState() {
     super.initState();
 
     // Iniciar un temporizador de 3 segundos antes de navegar al Login
     Timer(Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, '/login'); // Ir al login después del Splash
+      Navigator.pushReplacementNamed(
+          context, '/login'); // Ir al login después del Splash
     });
   }
 
@@ -27,7 +27,8 @@ class _SplashScreenState extends State<SplashScreen> {
         height: double.infinity, // Asegura que ocupe toda la altura
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: NetworkImage('https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/fondosplash.png'), // URL de la imagen en S3
+            image: NetworkImage(
+                'http://funkyrecursos.s3.us-east-2.amazonaws.com/assets/logo_funcy_splash.png'), // URL de la imagen en S3
             fit: BoxFit.cover, // La imagen cubrirá toda la pantalla
           ),
         ),

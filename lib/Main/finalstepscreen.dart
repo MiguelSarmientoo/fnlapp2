@@ -28,7 +28,6 @@ class _FinalStepScreenState extends State<FinalStepScreen> {
   }
 
   Future<void> _sendData() async {
-    // Usa la URL base desde el archivo de configuración
     final String apiUrl =
         "${Config.apiUrl}/userprograma/${widget.userId}/${widget.tecnicaId}";
 
@@ -67,10 +66,13 @@ class _FinalStepScreenState extends State<FinalStepScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 3, 12, 12),
+        backgroundColor: const Color(0xFF4B158D),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
@@ -95,52 +97,57 @@ class _FinalStepScreenState extends State<FinalStepScreen> {
               ),
             ),
             child: Container(
-              color: Colors.black
-                  .withOpacity(0.5), // Sombreado del 60% encima de la imagen
+              color: Colors.black.withOpacity(0.5),
             ),
           ),
           Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "Califica tu experiencia con la técnica de relajación de hoy que te ofreció Funcy",
-                  style: TextStyle(fontSize: 18.0, color: Colors.white),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  child: Text(
-                    "¿Qué tan aliviado te sientes luego de la sesión de hoy?",
-                    style: TextStyle(fontSize: 16.0, color: Colors.grey),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.05,
+                  vertical: screenHeight * 0.03),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "Califica tu experiencia con la técnica de relajación de hoy que te ofreció Funcy",
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.045,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                     textAlign: TextAlign.center,
                   ),
-                ),
-                SizedBox(height: 20),
-                RatingBar.builder(
-                  initialRating: 3,
-                  minRating: 1,
-                  direction: Axis.horizontal,
-                  allowHalfRating: false,
-                  itemCount: 5,
-                  itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                  unratedColor: Colors.blueGrey,
-                  itemBuilder: (context, _) =>
-                      Icon(Icons.star, color: Colors.amber),
-                  onRatingUpdate: (rating) {
-                    setState(() {
-                      _rating = rating;
-                      _checkInput();
-                    });
-                  },
-                ),
-                SizedBox(height: 30),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: TextField(
+                  SizedBox(height: screenHeight * 0.02),
+                  Text(
+                    "¿Qué tan aliviado te sientes luego de la sesión de hoy?",
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.04,
+                      color: Colors.grey[300],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: screenHeight * 0.03),
+                  RatingBar.builder(
+                    initialRating: 3,
+                    minRating: 1,
+                    direction: Axis.horizontal,
+                    allowHalfRating: false,
+                    itemCount: 5,
+                    itemPadding:
+                        EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
+                    unratedColor: Colors.blueGrey,
+                    itemBuilder: (context, _) =>
+                        Icon(Icons.star, color: Colors.amber),
+                    onRatingUpdate: (rating) {
+                      setState(() {
+                        _rating = rating;
+                        _checkInput();
+                      });
+                    },
+                  ),
+                  SizedBox(height: screenHeight * 0.04),
+                  TextField(
                     controller: commentController,
                     decoration: InputDecoration(
                       filled: true,
@@ -148,7 +155,7 @@ class _FinalStepScreenState extends State<FinalStepScreen> {
                       hintText: "Deja un comentario sobre la técnica",
                       hintStyle: TextStyle(color: Colors.grey),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
+                        borderRadius: BorderRadius.circular(screenWidth * 0.02),
                       ),
                     ),
                     maxLines: 3,
@@ -156,45 +163,37 @@ class _FinalStepScreenState extends State<FinalStepScreen> {
                       _checkInput();
                     },
                   ),
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _isButtonEnabled ? _sendData : null,
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Color.fromARGB(255, 75, 21, 141),
-                      disabledBackgroundColor: Color(0xFFe3dce4),
+                  SizedBox(height: screenHeight * 0.03),
+                  ElevatedButton(
+                    onPressed: _isButtonEnabled ? _sendData : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4B158D),
+                      disabledBackgroundColor: const Color(0xFFE3DCE4),
                       foregroundColor: Colors.white,
-                      disabledForegroundColor:
-                          Color.fromARGB(255, 104, 104, 104)),
-                  child: Text(
-                    'Enviar',
-                    style: TextStyle(fontSize: 16.0),
+                      disabledForegroundColor: Colors.grey,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.2,
+                        vertical: screenHeight * 0.015,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(screenWidth * 0.02),
+                      ),
+                    ),
+                    child: Text(
+                      'Enviar',
+                      style: TextStyle(fontSize: screenWidth * 0.045),
+                    ),
                   ),
-                ),
-                SizedBox(height: 20),
-                // Mensaje de feedback
-                Text(
-                  _feedbackMessage,
-                  style: TextStyle(fontSize: 16.0, color: Colors.white),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-          Positioned(
-            bottom: 30,
-            left: MediaQuery.of(context).size.width / 2 - 28,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Color.fromARGB(255, 75, 21, 141),
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: Icon(Icons.arrow_back, color: Colors.white),
-                iconSize: 28,
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                  SizedBox(height: screenHeight * 0.03),
+                  Text(
+                    _feedbackMessage,
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.04,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
           ),

@@ -13,26 +13,26 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Obtener el tamaño de la pantalla
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: Color(0xFFF7F2FA),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Color(0xFF5027D0),
+        backgroundColor: const Color(0xFF5027D0),
         title: Text(
           'Perfil',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
+          style: GoogleFonts.roboto(
+            fontWeight: FontWeight.w500,
             color: Colors.white,
           ),
         ),
         centerTitle: true,
-        elevation: 3,
+        elevation: 1,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Center(
         child: Padding(
-          padding: EdgeInsets.all(screenWidth * 0.04), // Espaciado flexible
+          padding: EdgeInsets.all(screenWidth * 0.04),
           child: profileData == null
               ? const CircularProgressIndicator()
               : SingleChildScrollView(
@@ -45,19 +45,14 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _buildProfileInfo(double screenWidth) {
     return Container(
-      constraints: BoxConstraints(
-          maxWidth: screenWidth * 0.85), // Porcentaje del ancho de pantalla
-      padding: EdgeInsets.all(screenWidth * 0.05), // Espaciado flexible
+      constraints: BoxConstraints(maxWidth: screenWidth * 0.85),
+      padding: EdgeInsets.all(screenWidth * 0.05),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF5027D0), Color(0xFF9F8CFD)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(30.0),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
+            color: Colors.grey.withOpacity(0.2),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -72,18 +67,18 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 20),
           _buildAdditionalInfo(),
           const Divider(
-            height: 40,
-            thickness: 1.5,
-            color: Colors.white70,
+            height: 30,
+            thickness: 1,
+            color: Colors.grey,
           ),
           const SizedBox(height: 20),
           _buildLogoutButton(),
           const SizedBox(height: 10),
           Text(
-            'Versión 1.0.0',
-            style: GoogleFonts.poppins(
-              fontSize: 13.0,
-              color: Colors.white70,
+            'Versión 2.3',
+            style: GoogleFonts.roboto(
+              fontSize: 12.0,
+              color: Colors.grey,
             ),
           ),
         ],
@@ -93,15 +88,15 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _buildProfileImage() {
     return CircleAvatar(
-      radius: 70,
-      backgroundColor: Colors.white,
+      radius: 60,
+      backgroundColor: const Color(0xFFEEE8FB),
       backgroundImage: profileData?.profileImage != null
           ? NetworkImage(profileData!.profileImage!)
           : null,
       child: profileData?.profileImage == null
           ? const Icon(
-              Icons.account_circle,
-              size: 80,
+              Icons.person,
+              size: 60,
               color: Color(0xFF5027D0),
             )
           : null,
@@ -114,19 +109,19 @@ class ProfileScreen extends StatelessWidget {
       children: [
         Text(
           profileData?.email ?? 'Cargando...',
-          style: GoogleFonts.poppins(
-            fontSize: 22.0,
+          style: GoogleFonts.roboto(
+            fontSize: 20.0,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Colors.black87,
           ),
         ),
         const SizedBox(height: 8),
         Text(
           profileData?.email ?? 'Nombre no disponible',
-          style: GoogleFonts.poppins(
-            fontSize: 18.0,
-            fontWeight: FontWeight.w500,
-            color: Colors.white70,
+          style: GoogleFonts.roboto(
+            fontSize: 16.0,
+            fontWeight: FontWeight.w400,
+            color: Colors.black54,
           ),
         ),
       ],
@@ -137,36 +132,39 @@ class ProfileScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildInfoRow('Correo:', profileData?.email ?? 'No disponible'),
+        _buildInfoRow(
+            Icons.email, 'Correo:', profileData?.email ?? 'No disponible'),
         const SizedBox(height: 10),
-        _buildInfoRow('Nivel jerárquico:',
+        _buildInfoRow(Icons.star, 'Nivel jerárquico:',
             profileData?.hierarchicalLevel ?? 'No disponible'),
         const SizedBox(height: 10),
-        _buildInfoRow(
-            'Empresa:', profileData?.nombreEmpresa ?? 'No disponible'),
+        _buildInfoRow(Icons.business, 'Empresa:',
+            profileData?.nombreEmpresa ?? 'No disponible'),
       ],
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        Icon(icon, color: const Color(0xFF5027D0), size: 20),
+        const SizedBox(width: 10),
         Text(
           label,
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-            fontSize: 16.0,
-            color: Colors.white70,
+          style: GoogleFonts.roboto(
+            fontWeight: FontWeight.w500,
+            fontSize: 14.0,
+            color: Colors.black87,
           ),
         ),
-        Expanded(
+        const Spacer(),
+        Flexible(
           child: Text(
             value,
             textAlign: TextAlign.end,
-            style: GoogleFonts.poppins(
-              fontSize: 16.0,
-              color: Colors.white,
+            style: GoogleFonts.roboto(
+              fontSize: 14.0,
+              color: Colors.black54,
             ),
           ),
         ),
@@ -175,21 +173,20 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildLogoutButton() {
-    return ElevatedButton(
+    return ElevatedButton.icon(
       onPressed: () => onLogout(),
-      child: Text(
+      icon: const Icon(Icons.logout, size: 18),
+      label: Text(
         'Cerrar sesión',
-        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        style: GoogleFonts.roboto(fontWeight: FontWeight.w500),
       ),
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFF5027D0),
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(25),
+          borderRadius: BorderRadius.circular(20),
         ),
-        elevation: 8,
-        shadowColor: Colors.grey.withOpacity(0.3),
       ),
     );
   }

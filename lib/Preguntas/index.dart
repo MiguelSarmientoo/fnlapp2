@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:fnlapp/Main/prevtestestres.dart';
+import 'package:fnlapp/Politicas%20y%20Terminos/condiciones_uso.dart';
+import 'package:fnlapp/Politicas%20y%20Terminos/politica_privacidad.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -368,13 +370,29 @@ class _IndexScreenState extends State<IndexScreen> {
                           TextSpan(
                             text: 'Política de privacidad',
                             style: TextStyle(color: Colors.red),
-                            recognizer: TapGestureRecognizer()..onTap = () {},
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          PoliticaPrivacidadScreen()),
+                                );
+                              },
                           ),
                           TextSpan(text: ' y las '),
                           TextSpan(
                             text: 'Condiciones de uso',
                             style: TextStyle(color: Colors.red),
-                            recognizer: TapGestureRecognizer()..onTap = () {},
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          CondicionesUsoScreen()),
+                                );
+                              },
                           ),
                         ],
                       ),
@@ -406,7 +424,15 @@ class _IndexScreenState extends State<IndexScreen> {
                           TextSpan(
                             text: 'Política de privacidad',
                             style: TextStyle(color: Colors.red),
-                            recognizer: TapGestureRecognizer()..onTap = () {},
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          PoliticaPrivacidadScreen()),
+                                );
+                              },
                           ),
                         ],
                       ),
@@ -429,9 +455,27 @@ class _IndexScreenState extends State<IndexScreen> {
                     },
                   ),
                   Flexible(
-                    child: Text(
-                      'Autorizo a la empresa a recopilar y utilizar información sobre mi actividad en aplicaciones y sitios web relacionados, así como datos necesarios para evaluar mi nivel de estrés y bienestar laboral, conforme a lo establecido en la Política de privacidad.',
-                      style: TextStyle(fontSize: 16.0),
+                    child: Text.rich(
+                      TextSpan(
+                        text:
+                            'Autorizo a la empresa a recopilar y utilizar información sobre mi actividad en aplicaciones y sitios web relacionados, así como datos necesarios para evaluar mi nivel de estrés y bienestar laboral, conforme a lo establecido en la ',
+                        style: TextStyle(fontSize: 16.0, color: Colors.black),
+                        children: [
+                          TextSpan(
+                            text: 'Política de privacidad',
+                            style: TextStyle(color: Colors.red),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          PoliticaPrivacidadScreen()),
+                                );
+                              },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -699,13 +743,28 @@ class _IndexScreenState extends State<IndexScreen> {
                     TextSpan(
                       text: 'Política de privacidad',
                       style: TextStyle(color: Colors.red),
-                      recognizer: TapGestureRecognizer()..onTap = () {},
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    PoliticaPrivacidadScreen()),
+                          );
+                        },
                     ),
                     TextSpan(text: ' y las '),
                     TextSpan(
                       text: 'Condiciones de uso',
                       style: TextStyle(color: Colors.red),
-                      recognizer: TapGestureRecognizer()..onTap = () {},
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => CondicionesUsoScreen()),
+                          );
+                        },
                     ),
                   ],
                 ),

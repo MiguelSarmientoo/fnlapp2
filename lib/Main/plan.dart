@@ -31,7 +31,7 @@ class PlanScreen extends StatelessWidget {
       return 0;
     }
     return (programas.where((x) => x['completed_date'] != null).length /
-                programas.length *
+                21 *
                 1000)
             .round() /
         10;
@@ -333,14 +333,32 @@ class PlanScreen extends StatelessWidget {
                         )
                       else
                         Column(
-                          children: programas
-                              .map((programa) => Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 10.0),
-                                    child:
-                                        _buildProgramaWidget(programa, context),
-                                  ))
-                              .toList(),
+                          children: (programas.length < 21)
+                              ? [
+                                  Text(
+                                    "Estamos terminando de crear tu programa de 21 días 💪",
+                                    style: GoogleFonts.poppins(
+                                        fontSize: 12.0,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF4A4A4A)),
+                                  ),
+                                  ...(programas
+                                      .map((programa) => Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 10.0),
+                                            child: _buildProgramaWidget(
+                                                programa, context),
+                                          ))
+                                      .toList())
+                                ]
+                              : programas
+                                  .map((programa) => Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 10.0),
+                                        child: _buildProgramaWidget(
+                                            programa, context),
+                                      ))
+                                  .toList(),
                         ),
                     ],
                   ),

@@ -206,7 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // nivelEstres = "Error al obtener el nivel de estrés";
             nivelEstres = NivelEstres.desconocido;
           });
-          return;
+          // return;
         }
 
         // Intentar obtener los programas con reintentos

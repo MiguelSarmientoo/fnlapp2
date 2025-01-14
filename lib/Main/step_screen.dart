@@ -269,7 +269,7 @@ class _StepScreenState extends State<StepScreen> {
                                   _speak(widget.steps[currentStep]);
                                 } else {
                                   if (isPlaying) {
-                                    _stop();
+                                    await _stop();
                                   }
                                   // Ir a la pantalla de retroalimentación
                                   Navigator.push(

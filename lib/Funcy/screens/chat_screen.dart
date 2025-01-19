@@ -102,39 +102,62 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _sendMessage(String text) async {
-    final url = Uri.parse('${Config.apiUrl}/guardarMensaje'); // Usar Config.apiUrl
+    final url = Uri.parse('${Config.apiUrl}/ask'); // Usar Config.apiUrl
     try {
+      final id = messages.length;
+      print(id);
+      setState(() {
+        messages.insert(
+          0,
+          {
+            'id': id ?? '',
+            'text': text,
+            'time': DateFormat('HH:mm').format(DateTime.now()),
+            'user_id': widget.userId,
+            'created_at': '2025-01-18 20:21:08',
+          },
+        );
+      });
+      _scrollController.animateTo(
+        0.0,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          'content': text,
+          'prompt': text,
           'userId': widget.userId,
         }),
       );
-
       if (response.statusCode == 201) {
+        //el mensaje del usuario se almacena en local
+
+        //la respuesta del bot se almacena en local
         final responseData = json.decode(response.body);
+        final botMessage = responseData['response']?.toString().trim() ?? '';
+        final idbot = messages.length;
+        print(idbot);
         setState(() {
           messages.insert(
             0,
             {
-              'id': responseData['id'] ?? '',
-              'text': text,
+              'id': idbot ?? '',
+              'text': botMessage,
               'time': DateFormat('HH:mm').format(DateTime.now()),
-              'user_id': widget.userId,
-              'created_at': responseData['created_at'] ?? '',
+              'user_id': 1,
+              'created_at': responseData['created_at'] ?? '2025-01-18 20:21:08',
             },
           );
         });
-
         _scrollController.animateTo(
           0.0,
           duration: Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
 
-        _getBotResponse(text);
+        //_getBotResponse(text);
       } else {
         print('Error al enviar el mensaje: ${response.statusCode}');
       }
@@ -142,7 +165,7 @@ class _ChatScreenState extends State<ChatScreen> {
       print('Error en la solicitud HTTP: $error');
     }
   }
-
+  /*
   Future<void> _getBotResponse(String userMessage) async {
     if (userMessage.isEmpty) {
       print('Mensaje del usuario es nulo o vacío');
@@ -212,7 +235,7 @@ class _ChatScreenState extends State<ChatScreen> {
       print('Error en la solicitud HTTP: $error');
     }
   }
-
+  */
   @override
   Widget build(BuildContext context) {
     return Scaffold(

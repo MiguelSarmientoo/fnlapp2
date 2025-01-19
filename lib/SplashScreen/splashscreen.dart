@@ -28,7 +28,7 @@ class _SplashScreenState extends State<SplashScreen> {
         decoration: BoxDecoration(
           image: DecorationImage(
             image: NetworkImage(
-                'http://funkyrecursos.s3.us-east-2.amazonaws.com/assets/logo_funcy_splash.png'), // URL de la imagen en S3
+                'https://funkyrecursos.s3.us-east-2.amazonaws.com/assets/fondosplash.png'), // URL de la imagen en S3
             fit: BoxFit.cover, // La imagen cubrirá toda la pantalla
           ),
         ),

@@ -250,126 +250,143 @@ class PlanScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color.fromARGB(255, 237, 221, 255),
-      body: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 130.0),
-            child: SingleChildScrollView(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Mi plan diario',
-                        style: GoogleFonts.poppins(
-                            fontSize: 28.0,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF3F0071)),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Nivel de estrés: ',
-                            style: GoogleFonts.poppins(
-                                fontSize: 18.0,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF4A4A4A)),
-                          ),
-                          Text(
-                            isLoading
-                                ? "Cargando..."
-                                : nivelEstres.name.toUpperCase(),
-                            style: GoogleFonts.poppins(
-                                fontSize: 18.0,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF3F0071)),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 20),
-                      !isLoading && programas.length > 0
-                          ? Column(children: [
-                              Text(
-                                "Progreso: ${getProgramPercentage()}%",
-                                style: GoogleFonts.poppins(
-                                    fontSize: 16.0,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF4A4A4A)),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(
-                                    border: Border.all(
-                                        width: 2, color: Colors.black)),
-                                child: LinearProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.greenAccent.shade700),
-                                    value: getProgramPercentage() / 100,
-                                    backgroundColor: Colors.white,
-                                    minHeight: 8),
-                                width: 300,
-                              ),
-                            ])
-                          : SizedBox(),
-                      SizedBox(height: 20),
-                      if (isLoading)
-                        CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Color(0xFF3F0071)),
-                        )
-                      else if (programas.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 20.0),
-                          child: Text(
-                            'No hay programas disponibles',
-                            style: GoogleFonts.poppins(
-                                fontSize: 16.0, color: Color(0xFF4A4A4A)),
-                          ),
-                        )
-                      else
-                        Column(
-                          children: (programas.length < 21)
-                              ? [
-                                  Text(
-                                    "Estamos terminando de crear tu programa de 21 días 💪",
-                                    style: GoogleFonts.poppins(
-                                        fontSize: 12.0,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF4A4A4A)),
-                                  ),
-                                  ...(programas
-                                      .map((programa) => Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 10.0),
-                                            child: _buildProgramaWidget(
-                                                programa, context),
-                                          ))
-                                      .toList())
-                                ]
-                              : programas
-                                  .map((programa) => Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 10.0),
-                                        child: _buildProgramaWidget(
-                                            programa, context),
-                                      ))
-                                  .toList(),
+    Widget build(BuildContext context) {
+      return Scaffold(
+        backgroundColor: Color.fromARGB(255, 237, 221, 255),
+        body: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 130.0),
+              child: SingleChildScrollView(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Mi plan diario',
+                          style: GoogleFonts.poppins(
+                              fontSize: 28.0,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF3F0071)),
                         ),
-                    ],
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Nivel de estrés: ',
+                              style: GoogleFonts.poppins(
+                                  fontSize: 18.0,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF4A4A4A)),
+                            ),
+                            Text(
+                              isLoading
+                                  ? "Cargando..."
+                                  : nivelEstres.name.toUpperCase(),
+                              style: GoogleFonts.poppins(
+                                  fontSize: 18.0,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF3F0071)),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 30),
+                        // Progreso mejorado con diseño minimalista
+                        if (!isLoading && programas.length > 0)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Progreso del plan",
+                                style: GoogleFonts.poppins(
+                                    fontSize: 18.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF3F0071)),
+                              ),
+                              SizedBox(height: 10),
+                              // Barra de progreso personalizada
+                              Stack(
+                                children: [
+                                  Container(
+                                    width: 300,
+                                    height: 20,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      color: Colors.white, // Fondo blanco
+                                    ),
+                                  ),
+                                  Container(
+                                    width: (300 * getProgramPercentage() / 100)
+                                        .clamp(0, 300),
+                                    height: 20,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Color(0xFF3F0071),
+                                          Color(0xFF7C47FF),
+                                        ],
+                                        begin: Alignment.centerLeft,
+                                        end: Alignment.centerRight,
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned.fill(
+                                    child: Center(
+                                      child: Text(
+                                        "${getProgramPercentage()}%",
+                                        style: GoogleFonts.poppins(
+                                            fontSize: 14.0,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF3F0071)),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          )
+                        else
+                          SizedBox(),
+                        SizedBox(height: 20),
+                        if (isLoading)
+                          CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Color(0xFF3F0071),
+                            ),
+                          )
+                        else if (programas.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20.0),
+                            child: Text(
+                              'No hay programas disponibles',
+                              style: GoogleFonts.poppins(
+                                  fontSize: 16.0, color: Color(0xFF4A4A4A)),
+                            ),
+                          )
+                        else
+                          Column(
+                            children: programas
+                                .map((programa) => Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 10.0),
+                                      child:
+                                          _buildProgramaWidget(programa, context),
+                                    ))
+                                .toList(),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
+          ],
+        ),
+      );
+    }
 
   Widget _buildProgramaWidget(dynamic programa, BuildContext context) {
     print('Contenido de programa: ${jsonEncode(programa)}');

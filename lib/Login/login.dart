@@ -47,13 +47,19 @@ class _LoginScreenState extends State<LoginScreen> {
     final permisopoliticas = responseBody['permisopoliticas'];
     final userresponsebool = responseBody['userresponsebool'];
     final testestresbool = responseBody['testestresbool'];
+    final role = responseBody['role'];
 
-    if (token != null && username != null && userId != null && email != null) {
+    if (role == 'User') {
+      if (token != null && username != null && userId != null && email != null ) {
       await _saveUserData(token, username, userId, email);
-      _navigateBasedOnPermission(context, permisopoliticas, userresponsebool, testestresbool);
-    } else {
-      _showSnackBar(context, 'Datos de autenticación no recibidos');
+        _navigateBasedOnPermission(context, permisopoliticas, userresponsebool, testestresbool);
+      } else {
+        _showSnackBar(context, 'Datos de autenticación no recibidos');
+      }
+    }else{
+      _showSnackBar(context, 'Usuario no autorizado');
     }
+    
   }
 
   Future<void> _saveUserData(String token, String username, int userId, String email) async {

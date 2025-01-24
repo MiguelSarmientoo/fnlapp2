@@ -18,6 +18,7 @@ class FinalStepScreen extends StatefulWidget {
 class _FinalStepScreenState extends State<FinalStepScreen> {
   final TextEditingController commentController = TextEditingController();
   double _rating = 3;
+  double _little_face = 3;
   bool _isButtonEnabled = false;
   String _feedbackMessage = '';
 
@@ -27,13 +28,24 @@ class _FinalStepScreenState extends State<FinalStepScreen> {
     });
   }
 
+  
+
   Future<void> _sendData() async {
+
+    int caritaValue = 2; // Valor por defecto, carita feliz
+    if (_rating == 1) {
+      caritaValue = 1; // Carita triste
+    } else if (_rating == 3) {
+      caritaValue = 3; // Carita neutra
+    }
+
     final String apiUrl =
         "${Config.apiUrl}/userprograma/${widget.userId}/${widget.tecnicaId}";
 
     final Map<String, dynamic> data = {
       "comentario": commentController.text,
-      "estrellas": _rating.toInt()
+      "estrellas": _rating.toInt(),
+      "caritas": caritaValue,
     };
 
     try {
@@ -118,15 +130,7 @@ class _FinalStepScreenState extends State<FinalStepScreen> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: screenHeight * 0.02),
-                  Text(
-                    "¿Qué tan aliviado te sientes luego de la sesión de hoy?",
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.04,
-                      color: Colors.grey[300],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                  
                   SizedBox(height: screenHeight * 0.03),
                   RatingBar.builder(
                     initialRating: 3,
@@ -134,8 +138,7 @@ class _FinalStepScreenState extends State<FinalStepScreen> {
                     direction: Axis.horizontal,
                     allowHalfRating: false,
                     itemCount: 5,
-                    itemPadding:
-                        EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
+                    itemPadding: EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
                     unratedColor: Colors.blueGrey,
                     itemBuilder: (context, _) =>
                         Icon(Icons.star, color: Colors.amber),
@@ -146,6 +149,8 @@ class _FinalStepScreenState extends State<FinalStepScreen> {
                       });
                     },
                   ),
+                  
+
                   SizedBox(height: screenHeight * 0.04),
                   TextField(
                     controller: commentController,
@@ -184,6 +189,62 @@ class _FinalStepScreenState extends State<FinalStepScreen> {
                       style: TextStyle(fontSize: screenWidth * 0.045),
                     ),
                   ),
+                  SizedBox(height: screenHeight * 0.09),
+                  Text(
+                    "¿Qué tan aliviado te sientes luego de la sesión de hoy?",
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.04,
+                      color: Colors.grey[300],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: screenHeight * 0.02), // Espaciado entre la pregunta y las caritas
+                  Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _little_face = 1; // Calificación para la carita triste
+                          _checkInput();
+                        });
+                      },
+                      child: Icon(
+                        Icons.sentiment_very_dissatisfied, // Carita triste
+                        color: _little_face == 1 ? Colors.red : Colors.grey,
+                        size: screenWidth * 0.12, // Ajusta el tamaño de las caritas
+                      ),
+                    ),
+                    SizedBox(width: screenWidth * 0.07),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _little_face = 2; // Calificación para la carita neutra
+                          _checkInput();
+                        });
+                      },
+                      child: Icon(
+                        Icons.sentiment_neutral, // Carita neutra
+                        color: _little_face == 2 ? Colors.yellow : Colors.grey,
+                        size: screenWidth * 0.12,
+                      ),
+                    ),
+                    SizedBox(width: screenWidth * 0.07),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _little_face = 3; // Calificación para la carita feliz
+                          _checkInput();
+                        });
+                      },
+                      child: Icon(
+                        Icons.sentiment_very_satisfied, // Carita feliz
+                        color: _little_face == 3 ? Colors.green : Colors.grey,
+                        size: screenWidth * 0.12,
+                      ),
+                    ),
+                  ],
+                ),
                   SizedBox(height: screenHeight * 0.03),
                   Text(
                     _feedbackMessage,

@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:fnlapp/Main/finalstepscreen.dart';
-import 'dart:convert'; // Para usar json.decode
+
 
 class StepScreen extends StatefulWidget {
   final List<String> steps; // Recibir la lista de pasos como un JSON
@@ -11,6 +11,7 @@ class StepScreen extends StatefulWidget {
   final int dia; // Número del día
   final int userId; // Nuevo: user_id
   final int tecnicaId; // Nuevo: tecnica_id
+  final String url_img;
 
   StepScreen({
     required this.steps,
@@ -18,6 +19,7 @@ class StepScreen extends StatefulWidget {
     required this.dia,
     required this.userId, // Nuevo: user_id
     required this.tecnicaId, // Nuevo: tecnica_id
+    required this.url_img, // Nuevo: url_img
   });
 
   @override
@@ -86,12 +88,12 @@ class _StepScreenState extends State<StepScreen> {
     int maxSteps = widget.steps.length; // Usar widget.steps directamente
 
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 3, 12, 12), // Color de fondo oscuro
+      backgroundColor: Colors.transparent, // Fondo transparente para el Scaffold
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.black.withOpacity(0.5),
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: const Color.fromARGB(255, 255, 255, 255)),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -103,220 +105,211 @@ class _StepScreenState extends State<StepScreen> {
         ),
       ),
       body: Container(
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Texto en el centro de la pantalla
-                  Expanded(
-                    child: Center(
-                      child: currentStep < maxSteps
-                          ? Text(
-                              widget.steps[
-                                  currentStep], // Usar widget.steps en lugar de steps
-                              style: GoogleFonts.poppins(
-                                  fontSize: 22.0,
-                                  color: Colors.white,
-                                  height: 1.5),
-                              textAlign: TextAlign.center,
-                            )
-                          : Container(), // Evita error si intentamos acceder a una vista más allá de los steps
-                    ),
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: NetworkImage(widget.url_img), // Usar la URL de la imagen
+            fit: BoxFit.cover, // Asegura que la imagen cubra toda la pantalla
+          ),
+        ),
+        child: Container(
+          // Añadimos una capa oscura sobre la imagen para mejorar la visibilidad del texto
+          color: Colors.black.withOpacity(0.5), // Ajusta la opacidad según sea necesario
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Texto en el centro de la pantalla
+                Expanded(
+                  child: Center(
+                    child: currentStep < maxSteps
+                        ? Text(
+                            widget.steps[currentStep], // Usar widget.steps
+                            style: GoogleFonts.poppins(
+                                fontSize: 22.0,
+                                color: Colors.white,
+                                height: 1.5),
+                            textAlign: TextAlign.center,
+                          )
+                        : Container(), // Evita error si intentamos acceder a un paso inexistente
                   ),
-                  // Texto del día y la técnica
-                  if (currentStep < maxSteps)
-                    Column(
+                ),
+                // Texto del día y la técnica
+                if (currentStep < maxSteps)
+                  Column(
+                    children: [
+                      Text(
+                        'Día ${widget.dia.toString().padLeft(2, '0')}',
+                        style: GoogleFonts.poppins(
+                            fontSize: 14.0, color: Colors.white),
+                      ),
+                      Text(
+                        widget.tecnicaNombre,
+                        style: GoogleFonts.poppins(
+                            fontSize: 16.0,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                SizedBox(height: 20),
+
+                // Si es la última vista, mostrar el input y el botón "Enviar"
+                if (currentStep == maxSteps)
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center, // Centra verticalmente
                       children: [
+                        // Título y Rating
                         Text(
-                          'Día ${widget.dia.toString().padLeft(2, '0')}',
+                          "Califica tu experiencia con las técnicas de relajación",
                           style: GoogleFonts.poppins(
-                              fontSize: 14.0, color: Colors.white),
+                              fontSize: 16.0, color: Colors.white),
+                          textAlign: TextAlign.center,
                         ),
-                        Text(
-                          widget.tecnicaNombre,
-                          style: GoogleFonts.poppins(
-                              fontSize: 16.0,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold),
+                        SizedBox(height: 10),
+                        RatingBar.builder(
+                          initialRating: 0,
+                          minRating: 1,
+                          direction: Axis.horizontal,
+                          allowHalfRating: false,
+                          itemCount: 5,
+                          itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                          itemBuilder: (context, _) => Icon(
+                            Icons.star,
+                            color: Colors.amber,
+                          ),
+                          onRatingUpdate: (rating) {
+                            setState(() {
+                              _rating = rating;
+                            });
+                          },
+                        ),
+                        SizedBox(height: 30),
+                        // Input para el comentario
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: TextField(
+                            controller: commentController,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              hintText: "Deja un comentario sobre la técnica",
+                              hintStyle: GoogleFonts.poppins(color: Colors.grey),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                            ),
+                            maxLines: 3,
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        // Botón "Enviar"
+                        ElevatedButton(
+                          onPressed: _sendComment, // Llama a la función para enviar el comentario
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color.fromARGB(255, 75, 21, 141),
+                          ),
+                          child: Text(
+                            'Enviar',
+                            style: GoogleFonts.poppins(
+                                fontSize: 16.0, color: Colors.white),
+                          ),
                         ),
                       ],
                     ),
-                  SizedBox(height: 20),
+                  ),
 
-                  // Si es la última vista, mostrar el input y el botón "Enviar"
-                  if (currentStep == maxSteps)
-                    Center(
-                      child: Column(
-                        mainAxisAlignment:
-                            MainAxisAlignment.center, // Centra verticalmente
-                        children: [
-                          // Título y Rating
-                          Text(
-                            "Califica tu experiencia con las técnicas de relajación",
-                            style: GoogleFonts.poppins(
-                                fontSize: 16.0, color: Colors.white),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(height: 10),
-                          RatingBar.builder(
-                            initialRating: 0,
-                            minRating: 1,
-                            direction: Axis.horizontal,
-                            allowHalfRating: false,
-                            itemCount: 5,
-                            itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                            itemBuilder: (context, _) => Icon(
-                              Icons.star,
-                              color: Colors.amber,
-                            ),
-                            onRatingUpdate: (rating) {
-                              setState(() {
-                                _rating = rating;
-                              });
-                            },
-                          ),
-                          SizedBox(height: 30),
-                          // Input para el comentario
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: TextField(
-                              controller: commentController,
-                              decoration: InputDecoration(
-                                filled: true,
-                                fillColor: Colors.white,
-                                hintText: "Deja un comentario sobre la técnica",
-                                hintStyle:
-                                    GoogleFonts.poppins(color: Colors.grey),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                ),
-                              ),
-                              maxLines: 3,
-                            ),
-                          ),
-                          SizedBox(height: 20),
-                          // Botón "Enviar"
-                          ElevatedButton(
-                            onPressed:
-                                _sendComment, // Llama a la función para enviar el comentario
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color.fromARGB(255, 75, 21, 141),
-                            ),
-                            child: Text(
-                              'Enviar',
-                              style: GoogleFonts.poppins(
-                                  fontSize: 16.0, color: Colors.white),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                  // Botones de navegación y audio solo si es mensaje
-                  if (currentStep < maxSteps)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Botón anterior (solo si no es la primera vista)
-                        if (currentStep > 0)
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Color.fromARGB(
-                                  255, 75, 21, 141), // Fondo circular
-                              shape: BoxShape.circle,
-                            ),
-                            child: IconButton(
-                              icon: Icon(Icons.skip_previous,
-                                  color: Colors.white),
-                              iconSize: 28, // Tamaño del ícono ajustado
-                              onPressed: () {
-                                setState(() {
-                                  if (currentStep > 0) {
-                                    currentStep--;
-                                    if (isPlaying) {
-                                      _stop();
-                                    }
-                                  }
-                                });
-                              },
-                            ),
-                          ),
-                        SizedBox(width: 20), // Separador
-                        // Botón siguiente (mostrar en todas las vistas menos la final de comentarios)
-                        if (currentStep <
-                            maxSteps) // Mostrar botón "siguiente" hasta la sexta vista
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Color.fromARGB(
-                                  255, 75, 21, 141), // Fondo circular
-                              shape: BoxShape.circle,
-                            ),
-                            child: IconButton(
-                              icon: Icon(Icons.skip_next, color: Colors.white),
-                              iconSize: 28, // Tamaño del ícono ajustado
-                              onPressed: () async {
-                                if (currentStep < maxSteps - 1) {
-                                  currentStep++;
-                                  if (isPlaying) {
-                                    await _stop();
-                                    await Future.delayed(
-                                        Duration(milliseconds: 800));
-                                  }
-                                  _speak(widget.steps[currentStep]);
-                                } else {
-                                  if (isPlaying) {
-                                    await _stop();
-                                  }
-                                  // Ir a la pantalla de retroalimentación
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => FinalStepScreen(
-                                        userId:
-                                            widget.userId, // Pasa el user_id
-                                        tecnicaId: widget
-                                            .tecnicaId, // Pasa el tecnica_id
-                                      ),
-                                    ),
-                                  );
-                                }
-                                //we refresh the view
-                                setState(() {});
-                              },
-                            ),
-                          ),
-                        SizedBox(width: 20), // Separador
-                        // Botón de audio (opcional para leer el texto en voz alta)
+                // Botones de navegación y audio solo si es mensaje
+                if (currentStep < maxSteps)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Botón anterior (solo si no es la primera vista)
+                      if (currentStep > 0)
                         Container(
                           decoration: BoxDecoration(
-                            color: Color.fromARGB(
-                                255, 75, 21, 141), // Fondo circular
+                            color: Color.fromARGB(255, 75, 21, 141), // Fondo circular
                             shape: BoxShape.circle,
                           ),
                           child: IconButton(
-                            icon: Icon(isPlaying ? Icons.stop : Icons.volume_up,
-                                color: Colors.white),
+                            icon: Icon(Icons.skip_previous, color: Colors.white),
                             iconSize: 28, // Tamaño del ícono ajustado
                             onPressed: () {
-                              if (isPlaying) {
-                                _stop();
-                              } else {
-                                _speak(widget
-                                    .steps[currentStep]); // Lee el paso actual
-                              }
+                              setState(() {
+                                if (currentStep > 0) {
+                                  currentStep--;
+                                  if (isPlaying) {
+                                    _stop();
+                                  }
+                                }
+                              });
                             },
                           ),
                         ),
-                      ],
-                    ),
-                ],
-              ),
+                      SizedBox(width: 20), // Separador
+                      // Botón siguiente
+                      if (currentStep < maxSteps)
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Color.fromARGB(255, 75, 21, 141), // Fondo circular
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: Icon(Icons.skip_next, color: Colors.white),
+                            iconSize: 28, // Tamaño del ícono ajustado
+                            onPressed: () async {
+                              if (currentStep < maxSteps - 1) {
+                                currentStep++;
+                                if (isPlaying) {
+                                  await _stop();
+                                  await Future.delayed(Duration(milliseconds: 800));
+                                }
+                                _speak(widget.steps[currentStep]);
+                              } else {
+                                if (isPlaying) {
+                                  await _stop();
+                                }
+                                // Ir a la pantalla de retroalimentación
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => FinalStepScreen(
+                                      userId: widget.userId, // Pasa el user_id
+                                      tecnicaId: widget.tecnicaId, // Pasa el tecnica_id
+                                    ),
+                                  ),
+                                );
+                              }
+                              // Actualizamos la vista
+                              setState(() {});
+                            },
+                          ),
+                        ),
+                      SizedBox(width: 20), // Separador
+                      // Botón de audio (opcional para leer el texto en voz alta)
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Color.fromARGB(255, 75, 21, 141), // Fondo circular
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: Icon(isPlaying ? Icons.stop : Icons.volume_up, color: Colors.white),
+                          iconSize: 28, // Tamaño del ícono ajustado
+                          onPressed: () {
+                            if (isPlaying) {
+                              _stop();
+                            } else {
+                              _speak(widget.steps[currentStep]); // Lee el paso actual
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

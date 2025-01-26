@@ -33,9 +33,9 @@ class _FinalStepScreenState extends State<FinalStepScreen> {
   Future<void> _sendData() async {
 
     int caritaValue = 2; // Valor por defecto, carita feliz
-    if (_rating == 1) {
+    if (_little_face == 1) {
       caritaValue = 1; // Carita triste
-    } else if (_rating == 3) {
+    } else if (_little_face == 3) {
       caritaValue = 3; // Carita neutra
     }
 

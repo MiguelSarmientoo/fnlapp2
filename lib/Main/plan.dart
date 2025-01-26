@@ -106,6 +106,7 @@ class PlanScreen extends StatelessWidget {
                                   tecnicaId:
                                       int.tryParse(programa['id'].toString()) ??
                                           0,
+                                  url_img: programa['url_img'],
                                 ),
                               ),
                             );

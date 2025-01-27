@@ -14,6 +14,7 @@ import './widgets/chat_widget.dart';
 import 'mitest.dart';
 import './ExitTest/exit_test_screen.dart';
 import 'package:fnlapp/Util/enums.dart';
+import 'package:fnlapp/Main/testestres_form.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -33,6 +34,8 @@ class _HomeScreenState extends State<HomeScreen> {
   ProfileData? profileData;
   bool hasFilledEmotion = false;
   String? token;
+  bool isExitTestEnabled = false; // Controla si el botón está habilitado
+
   
 
   @override
@@ -44,24 +47,61 @@ class _HomeScreenState extends State<HomeScreen> {
     checkIfEmotionFilledForToday();
   }
 
-  
-  Future<void> _checkExitTest() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    int? startDate = prefs.getInt('startDate');
 
-    if (startDate == null) {
-      prefs.setInt('startDate', DateTime.now().millisecondsSinceEpoch);
-    } else {
-      int elapsedDays = DateTime.now()
-          .difference(DateTime.fromMillisecondsSinceEpoch(startDate))
-          .inDays;
-      if (elapsedDays >= 21) {
-        setState(() {
-          showExitTest = true;
-        });
-      }
-    }
+Future<void> _checkExitTest() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  userId = prefs.getInt('userId');
+  token = prefs.getString('token');
+
+  if (userId == null || token == null) {
+    print('Error: userId o token no encontrados');
+    return;
   }
+
+  try {
+    // Obtener el registro del programa con el activity_id (21)
+    final response = await http.get(
+      Uri.parse('${Config.apiUrl}/userprograma/$userId/actividad/21'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+
+      // Obtener la fecha de inicio (start_date)
+      final String startDateStr = data['start_date'];
+      final DateTime startDate = DateTime.parse(startDateStr);
+
+      // Comparar con la fecha actual (ignorando la hora)
+      final DateTime today = DateTime.now();
+
+      setState(() {
+        showExitTest = true; // Siempre mostrar el botón
+        isExitTestEnabled = (startDate.year == today.year &&
+            startDate.month == today.month &&
+            startDate.day == today.day); // Habilitar si coinciden las fechas
+      });
+
+      if (isExitTestEnabled) {
+        print('Botón habilitado: Hoy es el día del registro.');
+      } else {
+        print('Botón deshabilitado: Hoy no coincide con el start_date.');
+      }
+    } else {
+      print('Error al obtener el programa: ${response.body}');
+      setState(() {
+        isExitTestEnabled = false;
+      });
+    }
+  } catch (e) {
+    print('Error al verificar el programa: $e');
+    setState(() {
+      isExitTestEnabled = false;
+    });
+  }
+}
+
+
 
   Future<void> loadProfile() async {
     profileData = await fetchProfile();
@@ -108,79 +148,90 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _getSelectedWidget() {
-    switch (_selectedIndex) {
-      case 0:
-        return PlanScreen(
-          nivelEstres: nivelEstres,
-          isLoading: isLoading,
-          programas: programas,
-        );
-      case 1:
-        return ChatWidget(
-          userId: userId ?? 1,
-          username: username ?? 'Usuario',
-          onChatToggle: (isOpen) {
-            setState(() {
-              isChatOpen = isOpen;
-            });
-          },
-        );
-      case 2:
-        return MiTestScreen(nivelEstres: nivelEstres);
-      case 3:
-        return ProfileScreen(
-          profileData: profileData,
-          onLogout: _handleLogout,
-        );
-      case 4:
-        if (showExitTest) {
-          return ExitTestScreen();
-        }
-        return PlanScreen(
-          nivelEstres: nivelEstres,
-          isLoading: isLoading,
-          programas: programas,
-        );
-      default:
-        return PlanScreen(
-          nivelEstres: nivelEstres,
-          isLoading: isLoading,
-          programas: programas,
-        );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color.fromARGB(255, 237, 221, 255),
-      body: Stack(
-        children: [
-          _getSelectedWidget(),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: CustomNavigationBar(
-              selectedIndex: _selectedIndex,
-              onItemTapped: _onItemTapped,
-              showExitTest: showExitTest,
+  switch (_selectedIndex) {
+    case 0:
+      return PlanScreen(
+        nivelEstres: nivelEstres,
+        isLoading: isLoading,
+        programas: programas,
+      );
+    case 1:
+      return ChatWidget(
+        userId: userId ?? 1,
+        username: username ?? 'Usuario',
+        onChatToggle: (isOpen) {
+          setState(() {
+            isChatOpen = isOpen;
+          });
+        },
+      );
+    case 2:
+      return MiTestScreen(nivelEstres: nivelEstres);
+    case 3:
+      return ProfileScreen(
+        profileData: profileData,
+        onLogout: _handleLogout,
+      );
+   case 4:
+  if (showExitTest) {
+    return Container(
+      color: Colors.white, // Fondo blanco unificado
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 125.0), // Espacio para la barra de navegación
+        child: SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height - 95.0, // Altura mínima igual al viewport menos el padding
+            ),
+            child: IntrinsicHeight( // Permite que el contenido interno se ajuste correctamente
+              child: TestEstresQuestionScreen(),
             ),
           ),
-          Positioned(
-            bottom: 80,
-            right: 20,
-            child: hasFilledEmotion
-                ? Container()
-                : FloatingActionButton(
-                    onPressed: _showEmotionModal,
-                    child: Icon(Icons.emoji_emotions),
-                  ),
-          ),
-        ],
+        ),
       ),
     );
   }
+  return PlanScreen(
+    nivelEstres: nivelEstres,
+    isLoading: isLoading,
+    programas: programas,
+  );
+
+    default:
+      return PlanScreen(
+        nivelEstres: nivelEstres,
+        isLoading: isLoading,
+        programas: programas,
+      );
+  }
+}
+
+
+  @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Color.fromARGB(255, 237, 221, 255),
+    body: Stack(
+      children: [
+        Positioned.fill(
+          child: _getSelectedWidget(),
+        ),
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: CustomNavigationBar(
+            selectedIndex: _selectedIndex,
+            onItemTapped: _onItemTapped,
+            showExitTest: showExitTest,
+            isExitTestEnabled: isExitTestEnabled,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 
   Future<void> _handleLogout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

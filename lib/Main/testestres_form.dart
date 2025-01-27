@@ -8,6 +8,7 @@ import 'package:fnlapp/config.dart';
 import 'package:fnlapp/SharedPreferences/sharedpreference.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Preguntas/questions_data.dart';
+import 'package:fnlapp/Main/home.dart';
 
 class TestEstresQuestionScreen extends StatefulWidget {
   const TestEstresQuestionScreen({Key? key}) : super(key: key);
@@ -75,60 +76,121 @@ class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
     }
   }
 
-  Future<void> submitTest() async {
-    // Validar userId antes de proceder
-    if (userId == null) {
-      print("Error: userId es null");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: No se ha cargado el ID del usuario')),
-      );
+Future<void> submitTest() async {
+  // Validar userId antes de proceder
+  if (userId == null) {
+    print("Error: userId es null");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error: No se ha cargado el ID del usuario')),
+    );
+    return;
+  }
+
+  // Validar si selectedOptions está correctamente poblado
+  if (selectedOptions.isEmpty || selectedOptions.length < 23) {
+    print("Error: selectedOptions no tiene suficientes datos.");
+    return;
+  }
+
+  // URLs de las APIs
+  final checkRecordUrl =
+      Uri.parse('${Config.apiUrl}/userestresessions/$userId/nivel'); // Verificar registro
+  final saveTestUrl = Uri.parse('${Config.apiUrl}/guardarTestEstres'); // Guardar test
+  final updateEstresUrl = Uri.parse('${Config.apiUrl}/userestresessions/assign'); // Actualizar estres_nivel_id
+
+  // Calcular el puntaje total
+  int totalScore = selectedOptions.fold(0, (sum, value) => sum + value);
+
+  try {
+    // Verificar si existe un registro para este usuario
+    final checkResponse = await http.get(checkRecordUrl);
+
+    if (checkResponse.statusCode != 200 && checkResponse.statusCode != 404) {
+      print('Error al verificar registro del usuario: ${checkResponse.body}');
       return;
     }
 
-    // Validar si selectedOptions está correctamente poblado
-    if (selectedOptions.isEmpty || selectedOptions.length < 23) {
-      print("Error: selectedOptions no tiene suficientes datos.");
+    bool recordExists = checkResponse.statusCode == 200;
+
+    // Obtener el gender_id del usuario
+    final genderResponse =
+        await http.get(Uri.parse('${Config.apiUrl}/userResponses/$userId'));
+    if (genderResponse.statusCode != 200) {
+      print('Error al obtener el gender_id: ${genderResponse.statusCode}');
       return;
     }
 
-    // URLs de las APIs
-    final url = Uri.parse('${Config.apiUrl}/guardarTestEstres');
-    final updateEstresUrl =
-        Uri.parse('${Config.apiUrl}/userestresessions/assign');
+    final List<dynamic> userData = json.decode(genderResponse.body);
+    int genderId = userData.isNotEmpty ? userData[0]['gender_id'] ?? 1 : 1;
 
-    // Construir el payload para guardar el test
-    final Map<String, dynamic> data = {
-      'user_id': userId,
-      for (int i = 0; i < selectedOptions.length; i++)
-        'pregunta_${i + 1}': selectedOptions[i],
-      'estado': 'activo',
-    };
+    // Calcular el nivel de estrés y su ID
+    final Map<String, dynamic> estresResult =
+        _calcularNivelEstres(totalScore, genderId);
+    NivelEstres nivelEstres = estresResult['nivel'];
+    int estresNivelId = estresResult['id'];
 
-    // Calcular el puntaje total
-    int totalScore = selectedOptions.fold(0, (sum, value) => sum + value);
+    if (recordExists) {
+  // Si el registro ya existe, actualiza el nivel de estrés
+  final updateData = {
+    'user_id': userId,
+    'estres_nivel_id': estresNivelId,
+  };
+  final updateResponse = await http.post(
+    updateEstresUrl,
+    headers: {"Content-Type": "application/json"},
+    body: json.encode(updateData),
+  );
 
-    try {
-      // Obtener el gender_id del usuario
-      final genderResponse =
-          await http.get(Uri.parse('${Config.apiUrl}/userResponses/$userId'));
-      if (genderResponse.statusCode != 200) {
-        print('Error al obtener el gender_id: ${genderResponse.statusCode}');
-        print('Cuerpo de la respuesta: ${genderResponse.body}');
-        return;
-      }
+  if (updateResponse.statusCode != 200) {
+    print('Error al actualizar el estres_nivel_id: ${updateResponse.body}');
+    return;
+  }
 
-      final List<dynamic> userData = json.decode(genderResponse.body);
-      int genderId = userData.isNotEmpty ? userData[0]['gender_id'] ?? 1 : 1;
+  print('Nivel de estrés actualizado correctamente.');
 
-      // Calcular el nivel de estrés y su ID
-      final Map<String, dynamic> estresResult =
-          _calcularNivelEstres(totalScore, genderId);
-      NivelEstres nivelEstres = estresResult['nivel'];
-      int estresNivelId = estresResult['id'];
+  // Guardar las respuestas en la tabla `test_estres_salida`
+  final saveExitTestUrl = Uri.parse('${Config.apiUrl}/guardarTestEstresSalida');
+  final Map<String, dynamic> exitTestData = {
+    'user_id': userId,
+    for (int i = 0; i < selectedOptions.length; i++)
+      'pregunta_${i + 1}': selectedOptions[i],
+    'estado': 'activo',
+  };
+
+  final exitTestResponse = await http.post(
+    saveExitTestUrl,
+    headers: {"Content-Type": "application/json"},
+    body: json.encode(exitTestData),
+  );
+
+  if (exitTestResponse.statusCode != 200) {
+    print('Error al guardar el test de salida: ${exitTestResponse.body}');
+    return;
+  }
+
+  print('Test de salida guardado correctamente.');
+
+  // Redirigir al HomeScreen
+  Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(builder: (context) => HomeScreen()),
+    (Route<dynamic> route) => false, // Elimina todas las rutas anteriores
+  );
+
+  return;
+}
+ else {
+      // Si no existe un registro, guardar el test completo
+      final Map<String, dynamic> data = {
+        'user_id': userId,
+        for (int i = 0; i < selectedOptions.length; i++)
+          'pregunta_${i + 1}': selectedOptions[i],
+        'estado': 'activo',
+      };
 
       // Guardar el test en el backend
       final response = await http.post(
-        url,
+        saveTestUrl,
         headers: {"Content-Type": "application/json"},
         body: json.encode(data),
       );
@@ -138,35 +200,37 @@ class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
         return;
       }
 
-      // Actualizar el nivel de estrés en el backend
-      final updateData = {
+      print('Test guardado correctamente.');
+
+      // Crear un nuevo registro con el nivel de estrés
+      final newRecordData = {
         'user_id': userId,
         'estres_nivel_id': estresNivelId,
       };
-      final updateResponse = await http.post(
+      final newRecordResponse = await http.post(
         updateEstresUrl,
         headers: {"Content-Type": "application/json"},
-        body: json.encode(updateData),
+        body: json.encode(newRecordData),
       );
 
-      if (updateResponse.statusCode != 200) {
-        print('Error al actualizar el estres_nivel_id: ${updateResponse.body}');
+      if (newRecordResponse.statusCode != 200) {
+        print('Error al crear el registro: ${newRecordResponse.body}');
         return;
       }
+
+      print('Registro de nivel de estrés creado correctamente.');
 
       // Actualizar testestresbool a true
       await _updateTestEstresBool();
 
-      // Aquí puedes agregar la llamada a tu ruta del backend para crear el programa en paralelo
+      // Generar reporte en paralelo
       final generateReportUrl =
           Uri.parse('${Config.apiUrl}/userprograma/report/$userId');
       final Map<String, dynamic> reportData = {
-        // Las respuestas a las preguntas, que deberían estar en selectedOptions
         for (int i = 0; i < selectedOptions.length; i++)
           'pregunta_${i + 1}': selectedOptions[i]
       };
 
-      // Llamada en paralelo
       Future<void> generateReport() async {
         try {
           final reportResponse = await http.post(
@@ -185,7 +249,6 @@ class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
         }
       }
 
-      // Llamar a la función generateReport() en paralelo
       generateReport();
 
       // Navegar a la pantalla de programa de estrés
@@ -195,10 +258,11 @@ class _TestEstresQuestionScreenState extends State<TestEstresQuestionScreen> {
           builder: (context) => CargarProgramaScreen(nivelEstres: nivelEstres),
         ),
       );
-    } catch (e) {
-      print('Error al procesar el test: $e');
     }
+  } catch (e) {
+    print('Error al procesar el test: $e');
   }
+}
 
   // Función para calcular el nivel de estrés
   Map<String, dynamic> _calcularNivelEstres(int totalScore, int genderId) {

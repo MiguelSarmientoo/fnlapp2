@@ -4,11 +4,13 @@ class CustomNavigationBar extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onItemTapped;
   final bool showExitTest;
+  final bool isExitTestEnabled;
 
   CustomNavigationBar({
     required this.selectedIndex,
     required this.onItemTapped,
     required this.showExitTest,
+    required this.isExitTestEnabled,
   });
 
   @override
@@ -44,42 +46,55 @@ class CustomNavigationBar extends StatelessWidget {
   }
 
   Widget _buildRoundedIcon(BuildContext context, int index) {
-    List<Map<String, dynamic>> items = [
-      {'icon': Icons.self_improvement, 'label': 'Mi plan'},
-      {'icon': Icons.chat, 'label': 'Chat'},
-      {'icon': Icons.favorite, 'label': 'Mi test'},
-      {'icon': Icons.account_circle, 'label': 'Yo'},
-      if (showExitTest) {'icon': Icons.check_circle, 'label': 'Test de Salida'},
-    ];
+  List<Map<String, dynamic>> items = [
+    {'icon': Icons.self_improvement, 'label': 'Mi plan'},
+    {'icon': Icons.chat, 'label': 'Chat'},
+    {'icon': Icons.favorite, 'label': 'Mi test'},
+    {'icon': Icons.account_circle, 'label': 'Yo'},
+    {'icon': Icons.check_circle, 'label': 'Test Salida'},
+  ];
 
-    // Verifica que el índice esté dentro del rango
-    if (index >= items.length) return Container();
+  // Verifica que el índice esté dentro del rango
+  if (index >= items.length) return Container();
 
-    return GestureDetector(
-      onTap: () => onItemTapped(index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircleAvatar(
-            radius: selectedIndex == index ? 26 : 22,
-            backgroundColor: selectedIndex == index ? Color(0xFF5027D0) : Colors.grey[200],
-            child: Icon(
-              items[index]['icon'],
-              color: selectedIndex == index ? Colors.white : Color(0xFF5027D0),
-              size: selectedIndex == index ? 26 : 22,
-            ),
+  bool isExitTest = index == 4; // Verificar si es el botón de Test de Salida
+
+  return GestureDetector(
+    onTap: isExitTest && !isExitTestEnabled
+        ? null // Botón deshabilitado si no es el día 21
+        : () => onItemTapped(index),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CircleAvatar(
+          radius: selectedIndex == index ? 26 : 22,
+          backgroundColor: isExitTest && !isExitTestEnabled
+              ? Colors.grey // Color gris si está deshabilitado
+              : (selectedIndex == index
+                  ? Color(0xFF5027D0)
+                  : Colors.grey[200]),
+          child: Icon(
+            items[index]['icon'],
+            color: isExitTest && !isExitTestEnabled
+                ? Colors.grey.shade700 // Color gris para el ícono deshabilitado
+                : (selectedIndex == index ? Colors.white : Color(0xFF5027D0)),
+            size: selectedIndex == index ? 26 : 22,
           ),
-          SizedBox(height: 5),
-          Text(
-            items[index]['label'],
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: selectedIndex == index ? FontWeight.bold : FontWeight.normal,
-              color: selectedIndex == index ? Color(0xFF5027D0) : Colors.black54,
-            ),
+        ),
+        SizedBox(height: 5),
+        Text(
+          items[index]['label'],
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: selectedIndex == index ? FontWeight.bold : FontWeight.normal,
+            color: isExitTest && !isExitTestEnabled
+                ? Colors.grey // Color gris para el texto deshabilitado
+                : (selectedIndex == index ? Color(0xFF5027D0) : Colors.black54),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
+
 }

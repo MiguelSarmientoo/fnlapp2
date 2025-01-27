@@ -28,6 +28,8 @@ class _IndexScreenState extends State<IndexScreen> {
   Map<String, List<Map<String, dynamic>>> questionCategories = {
     'age_range': [],
     'level': [],
+    'area': [],
+    'sede': [],
     'responsability_level': [],
     'gender': []
   };
@@ -39,6 +41,7 @@ class _IndexScreenState extends State<IndexScreen> {
   bool acceptedProcessing = false;
   bool acceptedTracking = false;
   bool agreedToAll = false;
+  int? selectedAreaId; 
 
   int? userId;
 
@@ -48,8 +51,8 @@ class _IndexScreenState extends State<IndexScreen> {
   @override
   void initState() {
     super.initState();
-    fetchData();
     _loadUserData();
+    fetchData();
   }
 
   Future<void> _loadUserData() async {
@@ -135,11 +138,73 @@ class _IndexScreenState extends State<IndexScreen> {
     }
   }
 
+  Future<void> fetchHierarchicalLevel(int areaId) async {
+    try {
+      var hierarchicalEndpoint = 'v1/maintance/hierarchical-level/$areaId';
+      var hierarchicalResponse = await widget.apiServiceWithToken.get(hierarchicalEndpoint);
+
+      var hierarchicalData = json.decode(hierarchicalResponse.body);
+      var hierarchicalLevels = hierarchicalData['results'];
+
+      if (hierarchicalLevels != null) {
+        setState(() {
+          questionCategories['level'] = (hierarchicalLevels as List)
+              .map((item) => Map<String, dynamic>.from(item))
+              .toList();
+        });
+      }
+
+      print('Niveles jerárquicos cargados correctamente para el área ID: $areaId.');
+    } catch (e) {
+      print('Error al cargar niveles jerárquicos: $e');
+    }
+  }
+
+
   Future<void> fetchQuestions() async {
     try {
+      // Cargar áreas
+      userId = await getUserId();
+
+
+      var sedesResponse = await widget.apiServiceWithToken.get('v1/maintance/sedes/$userId');
+      var sedesData = json.decode(sedesResponse.body);
+      var sedes = sedesData['results'];
+
+
+
+      if (sedes != null && sedes.isNotEmpty) {
+        // Guardar áreas en la categoría correspondiente
+        setState(() {
+          questionCategories['sede'] = (sedes as List)
+              .map((item) => Map<String, dynamic>.from(item))
+              .toList();
+        });
+
+        // No cargamos niveles jerárquicos aquí automáticamente, eso será manejado dinámicamente
+        print('Sedes cargadas correctamente.');
+      }
+
+      var areasResponse = await widget.apiServiceWithToken.get('v1/maintance/areas/$userId');
+      var areasData = json.decode(areasResponse.body);
+      var areas = areasData['results'];
+
+
+      if (areas != null && areas.isNotEmpty) {
+        // Guardar áreas en la categoría correspondiente
+        setState(() {
+          questionCategories['area'] = (areas as List)
+              .map((item) => Map<String, dynamic>.from(item))
+              .toList();
+        });
+
+        // No cargamos niveles jerárquicos aquí automáticamente, eso será manejado dinámicamente
+        print('Áreas cargadas correctamente.');
+      }
+    
+      // Cargar otras categorías
       var endpoints = [
         'v1/maintance/range-age',
-        'v1/maintance/hierarchical-level',
         'v1/maintance/responsability-level',
         'v1/maintance/gender',
       ];
@@ -147,7 +212,7 @@ class _IndexScreenState extends State<IndexScreen> {
       var responses = await Future.wait(
         endpoints.map((endpoint) => widget.apiServiceWithToken.get(endpoint)),
       );
-
+      
       for (var i = 0; i < responses.length; i++) {
         var data = json.decode(responses[i].body);
         var category = data['results'];
@@ -158,14 +223,10 @@ class _IndexScreenState extends State<IndexScreen> {
                 .map((item) => Map<String, dynamic>.from(item))
                 .toList();
           } else if (i == 1) {
-            questionCategories['level'] = (category as List)
-                .map((item) => Map<String, dynamic>.from(item))
-                .toList();
-          } else if (i == 2) {
             questionCategories['responsability_level'] = (category as List)
                 .map((item) => Map<String, dynamic>.from(item))
                 .toList();
-          } else if (i == 3) {
+          } else if (i == 2) {
             questionCategories['gender'] = (category as List)
                 .map((item) => Map<String, dynamic>.from(item))
                 .toList();
@@ -185,6 +246,8 @@ class _IndexScreenState extends State<IndexScreen> {
       print('Error al cargar preguntas: $e');
     }
   }
+
+
 
   // Función para manejar la selección de una opción
   void selectOption(String option) {
@@ -219,11 +282,13 @@ class _IndexScreenState extends State<IndexScreen> {
     // Verificar los valores de selectedAnswers
     print('Selected Answers: $selectedAnswers');
 
-    if (selectedAnswers[3] == null) {
+    if (selectedAnswers[5] == null) {
       if (selectedOption != null) {
         selectedAnswers[currentQuestionIndex] = selectedOption;
       }
     }
+    
+
 
     final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
     final String createdAt = dateFormat.format(DateTime.now());
@@ -231,9 +296,10 @@ class _IndexScreenState extends State<IndexScreen> {
     final Map<String, dynamic> dataToSend = {
       "user_id": userId,
       "age_range_id": selectedAnswers[0],
-      "hierarchical_level_id": selectedAnswers[2],
-      "responsability_level_id": selectedAnswers[3],
+      "hierarchical_level_id": selectedAnswers[3],
+      "responsability_level_id": selectedAnswers[4],
       "gender_id": selectedAnswers[1],
+      "sedes_id": selectedAnswers[5],
       "created_at": createdAt,
     };
 
@@ -553,10 +619,16 @@ class _IndexScreenState extends State<IndexScreen> {
         currentCategoryKey = 'gender';
         break;
       case 2:
-        currentCategoryKey = 'level';
+        currentCategoryKey = 'area';
         break;
       case 3:
+        currentCategoryKey = 'level';
+        break;
+      case 4:
         currentCategoryKey = 'responsability_level';
+        break;
+      case 5:
+        currentCategoryKey = 'sede';
         break;
       default:
         currentCategoryKey = 'age_range';
@@ -582,12 +654,20 @@ class _IndexScreenState extends State<IndexScreen> {
         preguntaTexto = '¿Cuál es tu género?';
         break;
       case 2:
-        preguntaTexto = '¿Cuál es tu posición en la organización?';
+        preguntaTexto = '¿Cuál es tu Área?';
         break;
       case 3:
+        preguntaTexto = '¿Cuál es tu posición en la organización?';
+        break;
+      case 4:
         preguntaTexto = '¿Cuál es tu nivel de responsabilidad?';
         break;
+      case 5:
+        preguntaTexto = '¿A que sede perteneces?';
+        break;
     }
+
+
 
     return Column(
       children: [
@@ -598,7 +678,7 @@ class _IndexScreenState extends State<IndexScreen> {
           child: Column(
             children: [
               Text(
-                'Pregunta ${currentQuestionIndex + 1} de 4',
+                'Pregunta ${currentQuestionIndex + 1} de 6',
                 style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
               ),
               if (currentQuestionIndex ==
@@ -648,13 +728,15 @@ class _IndexScreenState extends State<IndexScreen> {
                   ),
                 ),
               Spacer(),
+              
               // Botón de siguiente o finalización según el índice de pregunta
               TextButton(
-                onPressed: currentQuestionIndex < 3
+                
+                onPressed: currentQuestionIndex < 5
                     ? goToNextQuestion
                     : saveResponses, // Guardar respuestas si es la última pregunta
                 child: Text(
-                  currentQuestionIndex < 3 ? 'Siguiente' : 'Finalizar',
+                  currentQuestionIndex < 5 ? 'Siguiente' : 'Finalizar',
                   style: TextStyle(
                       color: Color(0xFF5027D0), fontWeight: FontWeight.w600),
                 ),
@@ -666,22 +748,25 @@ class _IndexScreenState extends State<IndexScreen> {
     );
   }
 
+  
+
   Widget _buildQuestionField(List<Map<String, dynamic>> questions) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        for (var question in questions)
-          Padding(
+    return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: ListView.builder(
+        shrinkWrap: true,  // Permite que el ListView se ajuste a su contenido
+        itemCount: questions.length,
+        itemBuilder: (context, index) {
+          var question = questions[index];
+          return Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: SizedBox(
               width: MediaQuery.of(context).size.width * 0.85,
               child: OutlinedButton(
                 style: OutlinedButton.styleFrom(
-                  backgroundColor:
-                      selectedOption == question.values.first.toString()
-                          ? Colors.white
-                          : Color(0xFF5027D0),
+                  backgroundColor: selectedOption == question.values.first.toString()
+                      ? Colors.white
+                      : Color(0xFF5027D0),
                   side: BorderSide(
                     color: selectedOption == question.values.first.toString()
                         ? Color(0xFF5027D0)
@@ -689,23 +774,34 @@ class _IndexScreenState extends State<IndexScreen> {
                     width: 2.0,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
+                    borderRadius: BorderRadius.circular(0.0),
                   ),
                   padding: EdgeInsets.symmetric(vertical: 20.0),
                 ),
                 onPressed: () {
-                  selectOption(question.values.first.toString());
+                  setState(() {
+                    selectedOption = question['id'].toString();
+                  });
+
+                  if (currentQuestionIndex == 2) { 
+                    int areaId = question['id']; 
+                    fetchHierarchicalLevel(areaId);
+                  }
                 },
                 child: Text(
                   question.containsKey('age_range')
                       ? question['age_range'].toString()
-                      : question.containsKey('level')
-                          ? question['level'].toString()
-                          : question.containsKey('gender')
-                              ? question['gender'].toString()
-                              : question.containsKey('responsability_level')
-                                  ? question['responsability_level'].toString()
-                                  : 'Valor no disponible',
+                      : question.containsKey('area')
+                          ? question['area'].toString()
+                          : question.containsKey('level')
+                              ? question['level'].toString()
+                              : question.containsKey('gender')
+                                  ? question['gender'].toString()
+                                  : question.containsKey('responsability_level')
+                                      ? question['responsability_level'].toString()
+                                      : question.containsKey('sede')
+                                        ? question['sede'].toString()
+                                          : 'Valor no disponible',
                   style: TextStyle(
                     fontSize: 16.0,
                     color: selectedOption == question.values.first.toString()
@@ -715,10 +811,12 @@ class _IndexScreenState extends State<IndexScreen> {
                 ),
               ),
             ),
-          ),
-      ],
+          );
+        },
+      )
     );
   }
+
 
   Widget _buildCheckBoxes() {
     return Column(

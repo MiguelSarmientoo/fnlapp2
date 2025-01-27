@@ -31,6 +31,9 @@ class _HomeScreenState extends State<HomeScreen> {
   String? username;
   int? funcyInteract;
   ProfileData? profileData;
+  bool hasFilledEmotion = false;
+  String? token;
+  
 
   @override
   void initState() {
@@ -38,8 +41,10 @@ class _HomeScreenState extends State<HomeScreen> {
     _checkExitTest();
     obtenerNivelEstresYProgramas();
     loadProfile();
+    checkIfEmotionFilledForToday();
   }
 
+  
   Future<void> _checkExitTest() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? startDate = prefs.getInt('startDate');
@@ -67,6 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       userId = prefs.getInt('userId');
+      token = prefs.getString('token');
 
       if (userId == null) {
         print('Error: userId is null');
@@ -74,11 +80,12 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       String url = '${Config.apiUrl}/perfilUsuario/$userId';
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse(url), headers: {
+        'Authorization': 'Bearer $token',
+      });
 
       if (response.statusCode == 200) {
         var profile = ProfileData.fromJson(json.decode(response.body));
-
         var res = await http
             .get(Uri.parse('${Config.apiUrl}/empresa/${profile.idEmpresa}'));
         profile.nombreEmpresa = json.decode(res.body)['nombre'];
@@ -127,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       case 4:
         if (showExitTest) {
-          return ExitTestScreen(); // Pantalla para el Test de Salida
+          return ExitTestScreen();
         }
         return PlanScreen(
           nivelEstres: nivelEstres,
@@ -157,9 +164,18 @@ class _HomeScreenState extends State<HomeScreen> {
             child: CustomNavigationBar(
               selectedIndex: _selectedIndex,
               onItemTapped: _onItemTapped,
-              showExitTest:
-                  showExitTest, // Pasa el estado de showExitTest al CustomNavigationBar
+              showExitTest: showExitTest,
             ),
+          ),
+          Positioned(
+            bottom: 80,
+            right: 20,
+            child: hasFilledEmotion
+                ? Container()
+                : FloatingActionButton(
+                    onPressed: _showEmotionModal,
+                    child: Icon(Icons.emoji_emotions),
+                  ),
           ),
         ],
       ),
@@ -186,83 +202,72 @@ class _HomeScreenState extends State<HomeScreen> {
       username = prefs.getString('username');
 
       if (userId != null) {
-        // Obtener el nivel de estrés
         final responseNivel = await http.get(
           Uri.parse('${Config.apiUrl}/userestresessions/$userId/nivel'),
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
         );
 
         if (responseNivel.statusCode == 200) {
           final responseData = jsonDecode(responseNivel.body);
           int estresNivelId = responseData['estres_nivel_id'];
 
-          print(
-              'Nivel de estrés obtenido: $estresNivelId'); // Verifica que los datos se obtienen
-
           setState(() {
             nivelEstres = _mapNivelEstres(estresNivelId);
           });
         } else {
           setState(() {
-            // nivelEstres = "Error al obtener el nivel de estrés";
             nivelEstres = NivelEstres.desconocido;
           });
-          // return;
         }
 
-        // Intentar obtener los programas con reintentos
         while (retryCount < maxRetries) {
           final responseProgramas = await http.post(
-            Uri.parse(
-                '${Config.apiUrl}/userprograma/getprogramcompleto/$userId'),
-            headers: {"Content-Type": "application/json"},
+            Uri.parse('${Config.apiUrl}/userprograma/getprogramcompleto/$userId'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
             body: jsonEncode({'user_id': userId}),
           );
 
           if (responseProgramas.statusCode == 200) {
             final responseData = jsonDecode(responseProgramas.body);
-            final List<dynamic> programasData = responseData[
-                'userProgramas']; // Accede a la clave 'userProgramas'
-
-            print(
-                'Programas obtenidos: $programasData'); // Verifica los datos recibidos
+            final List<dynamic> programasData = responseData['userProgramas'];
 
             setState(() {
               programas = programasData;
               isLoading = false;
             });
-            break; // Salir del ciclo si la solicitud fue exitosa
+            break;
           } else {
             retryCount++;
-            print('Intento ${retryCount}: Error en la obtención de programas');
             await Future.delayed(Duration(seconds: waitTime));
-            waitTime *= 2; // Incrementa el tiempo de espera
+            waitTime *= 2;
           }
         }
 
-        // Si no se obtuvieron programas después de los intentos
         if (retryCount == maxRetries) {
           setState(() {
-            // nivelEstres = "No se encontraron programas después de varios intentos";
             nivelEstres = NivelEstres.desconocido;
             isLoading = false;
           });
         }
       } else {
         setState(() {
-          // nivelEstres = "Usuario no encontrado";
           nivelEstres = NivelEstres.desconocido;
           isLoading = false;
         });
       }
     } catch (e) {
       setState(() {
-        // nivelEstres = "Error al cargar";
         nivelEstres = NivelEstres.desconocido;
         isLoading = false;
       });
-      print("Error al obtener los programas: $e");
     }
   }
+
 
   NivelEstres _mapNivelEstres(int nivelId) {
     switch (nivelId) {
@@ -276,4 +281,193 @@ class _HomeScreenState extends State<HomeScreen> {
         return NivelEstres.desconocido;
     }
   }
+
+
+
+  Future<void> checkIfEmotionFilledForToday() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      userId = prefs.getInt('userId');
+
+      if (userId != null) {
+        String fechaHoy = DateTime.now().toIso8601String().split('T')[0];
+        final response = await http.get(
+          Uri.parse('http://localhost:3000/api/emociones_diarias/$fechaHoy'),
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        );
+
+        if (response.statusCode == 200) {
+          var data = json.decode(response.body);
+          hasFilledEmotion = data['data'].isNotEmpty;
+        } else {
+          hasFilledEmotion = false;
+        }
+      }
+    } catch (e) {
+      hasFilledEmotion = false;
+    }
+
+    setState(() {});
+  }
+
+  void _showEmotionModal() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return EmotionModal(
+          onEmotionRegistered: (emotion, note) {
+            setState(() {
+              hasFilledEmotion = true;
+            });
+            _registerEmotion(emotion, note);
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+
+  
+
+  Future<void> _registerEmotion(int emotion, String note) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      userId = prefs.getInt('userId');
+
+      if (userId != null && token != null) {
+        String fechaHoy = DateTime.now().toIso8601String().split('T')[0];
+        final response = await http.post(
+          Uri.parse('http://localhost:3000/api/emociones_diarias'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode({
+            'emocion': emotion,
+            'notaOpcional': note,
+          }),
+        );
+
+        if (response.statusCode == 201) {
+          print('Emotion registered successfully');
+        } else {
+          print('Failed to register emotion');
+        }
+      }
+    } catch (e) {
+      print('Error registering emotion: $e');
+    }
+  }
+}
+
+class EmotionModal extends StatefulWidget {
+  final Function(int emotion, String note) onEmotionRegistered;
+
+  EmotionModal({required this.onEmotionRegistered});
+
+  @override
+  _EmotionModalState createState() => _EmotionModalState();
+}
+
+class _EmotionModalState extends State<EmotionModal> {
+  TextEditingController noteController = TextEditingController();
+  int selectedEmotion = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Select Emotion'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    selectedEmotion = 1;
+                  });
+                },
+                child: Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: selectedEmotion == 1
+                        ? Colors.grey.shade300
+                        : Colors.transparent,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.sentiment_very_satisfied,
+                    color: Colors.green,
+                    size: 40,
+                  ),
+                ),
+              ),
+              SizedBox(width: 20),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    selectedEmotion = 0;
+                  });
+                },
+                child: Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: selectedEmotion == 0
+                        ? Colors.grey.shade300
+                        : Colors.transparent,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.sentiment_neutral,
+                    color: Colors.grey,
+                    size: 40,
+                  ),
+                ),
+              ),
+              SizedBox(width: 20),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    selectedEmotion = -1;
+                  });
+                },
+                child: Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: selectedEmotion == -1
+                        ? Colors.grey.shade300
+                        : Colors.transparent,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.sentiment_dissatisfied,
+                    color: Colors.red,
+                    size: 40,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20),
+          TextField(
+            controller: noteController,
+            decoration: InputDecoration(hintText: 'Optional note'),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            widget.onEmotionRegistered(selectedEmotion, noteController.text);
+          },
+          child: Text('Save'),
+        ),
+      ],
+    );
+  }
+
 }

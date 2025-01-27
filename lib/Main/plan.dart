@@ -16,14 +16,16 @@ class PlanScreen extends StatelessWidget {
       required this.programas});
 
   bool isProgramUnlocked(dynamic programa) {
-    if (programa['start_date'] != null) {
-      DateTime temp = DateTime.parse(programa['start_date']).toLocal();
-      DateTime date = DateTime(temp.year, temp.month, temp.day);
-      bool isRightDay = DateTime.now().isAfter(date);
-      return isRightDay;
-    } else {
-      return false;
-    }
+    //if (programa['start_date'] != null) {
+    //  DateTime temp = DateTime.parse(programa['start_date']).toLocal();
+    //  DateTime date = DateTime(temp.year, temp.month, temp.day);
+    //  bool isRightDay = DateTime.now().isAfter(date);
+    //  return isRightDay;
+    //} else {
+    //  return false;
+    //}
+
+    return true;
   }
 
   double getProgramPercentage() {

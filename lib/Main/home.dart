@@ -61,7 +61,7 @@ Future<void> _checkExitTest() async {
   try {
     // Obtener el registro del programa con el activity_id (21)
     final response = await http.get(
-      Uri.parse('${Config.apiUrl}/userprograma/$userId/actividad/21'),
+      Uri.parse('${Config.apiUrl}/userprograma/$userId/actividad/59'),
       headers: {'Authorization': 'Bearer $token'},
     );
 

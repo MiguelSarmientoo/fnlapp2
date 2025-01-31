@@ -3,6 +3,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:fnlapp/Main/finalstepscreen.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'dart:typed_data';
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import '../config.dart';
 
 
 class StepScreen extends StatefulWidget {
@@ -81,6 +88,33 @@ class _StepScreenState extends State<StepScreen> {
     // Aquí puedes manejar el envío del comentario, por ahora simplemente hace pop
     Navigator.pop(context); // Volver al home
     print('Rating: $_rating'); // Verificar el valor del rating
+  }
+
+  Future<void> _playAudioFromAPI(String text) async {
+    try {
+      final url = Uri.parse('${Config.apiUrl}/voice/texttovoice/?text=$text&voiceId=Dorothy');
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        Uint8List audioBytes = response.bodyBytes;
+        AudioPlayer player = AudioPlayer();
+
+        if (kIsWeb) {
+          // Reproducir en la web
+          await player.play(BytesSource(audioBytes));
+        } else {
+          // Reproducir en móvil/escritorio
+          final tempDir = await getTemporaryDirectory();
+          final audioFile = File('${tempDir.path}/speech.mp3');
+          await audioFile.writeAsBytes(audioBytes);
+          await player.play(DeviceFileSource(audioFile.path));
+        }
+      } else {
+        print("Error al obtener audio: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error en la reproducción de audio: $e");
+    }
   }
 
   @override
@@ -265,7 +299,7 @@ class _StepScreenState extends State<StepScreen> {
                                   await _stop();
                                   await Future.delayed(Duration(milliseconds: 800));
                                 }
-                                _speak(widget.steps[currentStep]);
+                                await _playAudioFromAPI(widget.steps[currentStep]);
                               } else {
                                 if (isPlaying) {
                                   await _stop();
@@ -296,11 +330,14 @@ class _StepScreenState extends State<StepScreen> {
                         child: IconButton(
                           icon: Icon(isPlaying ? Icons.stop : Icons.volume_up, color: Colors.white),
                           iconSize: 28, // Tamaño del ícono ajustado
-                          onPressed: () {
+                          onPressed: () async {
                             if (isPlaying) {
-                              _stop();
+                              await _stop();
                             } else {
-                              _speak(widget.steps[currentStep]); // Lee el paso actual
+                              setState(() {
+                                isPlaying = true; // Cambia el estado a "reproduciendo"
+                              });
+                              await _playAudioFromAPI(widget.steps[currentStep]);
                             }
                           },
                         ),

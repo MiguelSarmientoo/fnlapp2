@@ -39,6 +39,7 @@ class _IndexScreenState extends State<IndexScreen> {
   bool loading = true;
   bool agreedToTerms = false;
   bool acceptedProcessing = false;
+  bool acceptedProcessing1 = false;
   bool acceptedTracking = false;
   bool agreedToAll = false;
   int? selectedAreaId; 
@@ -120,6 +121,7 @@ class _IndexScreenState extends State<IndexScreen> {
   void _handleAcceptAll() async {
     setState(() {
       acceptedProcessing = true;
+      acceptedProcessing1 = true;
       acceptedTracking = true;
       agreedToAll = true;
     });
@@ -471,11 +473,11 @@ class _IndexScreenState extends State<IndexScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Checkbox(
-                    value: acceptedProcessing,
+                    value: acceptedProcessing1,
                     activeColor: Color(0xFF5027D0),
                     onChanged: (value) {
                       setState(() {
-                        acceptedProcessing = value ?? false;
+                        acceptedProcessing1 = value ?? false;
                         _updateAgreedToAll();
                       });
                     },
@@ -558,6 +560,7 @@ class _IndexScreenState extends State<IndexScreen> {
                 onPressed: () {
                   setState(() {
                     acceptedProcessing = true;
+                    acceptedProcessing1 = true;
                     acceptedTracking = true;
                     _updateAgreedToAll();
                   });
@@ -897,7 +900,7 @@ class _IndexScreenState extends State<IndexScreen> {
 
   void _updateAgreedToAll() {
     setState(() {
-      agreedToAll = acceptedProcessing && acceptedTracking;
+      agreedToAll = acceptedProcessing && acceptedTracking && acceptedProcessing1;
     });
   }
 }

@@ -341,6 +341,20 @@ Future<void> submitTest() async {
     final question = questions[currentQuestionIndex];
 
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back), // Icono de flecha hacia atrás
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => HomeScreen()),
+              (Route<dynamic> route) => false, // Elimina todas las rutas anteriores
+            );
+          },
+        ),
+        title: Text('Pregunta ${currentQuestionIndex + 1} de ${questions.length}'),
+      ),
+      
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),

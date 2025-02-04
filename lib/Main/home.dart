@@ -28,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   bool isChatOpen = false;
   bool showExitTest = false;
+  bool showWidgets = false;
   int? userId;
   String? username;
   int? funcyInteract;
@@ -59,36 +60,55 @@ Future<void> _checkExitTest() async {
   }
 
   try {
-    // Obtener el registro del programa con el activity_id (21)
-    final response = await http.get(
-      Uri.parse('${Config.apiUrl}/userprograma/$userId/actividad/59'),
+    // Verifica si el usuario ya completó el test de estrés de salida
+    final response1 = await http.get(
+      Uri.parse('${Config.apiUrl}/getUserTestEstresSalida/$userId'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+    if (response1.statusCode == 404) { // Si no ha completado el test de salida
+      
+      final response = await http.get(
+        Uri.parse('${Config.apiUrl}/userprograma/$userId/actividad/21'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
 
-      // Obtener la fecha de inicio (start_date)
-      final String startDateStr = data['start_date'];
-      final DateTime startDate = DateTime.parse(startDateStr);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
 
-      // Comparar con la fecha actual (ignorando la hora)
-      final DateTime today = DateTime.now();
+        final String? completedDateStr = data['completed_date']; // Fecha de completado
 
-      setState(() {
-        showExitTest = true; // Siempre mostrar el botón
-        isExitTestEnabled = (startDate.year == today.year &&
-            startDate.month == today.month &&
-            startDate.day == today.day); // Habilitar si coinciden las fechas
-      });
+        if (completedDateStr != null) {
+          final DateTime completedDate = DateTime.parse(completedDateStr);
+          final DateTime today = DateTime.now();
 
-      if (isExitTestEnabled) {
-        print('Botón habilitado: Hoy es el día del registro.');
+          // Si el día 21 se completó en el pasado o hoy, el test de salida sigue activo
+          bool showTest = today.isAfter(completedDate) || _isSameDay(today, completedDate);
+
+          setState(() {
+            showExitTest = showTest;
+            isExitTestEnabled = showTest;
+          });
+
+          if (showExitTest) {
+            print('Test de salida habilitado: El día 21 ya se completó.');
+          } else {
+            print('Test de salida deshabilitado: El día 21 aún no ha sido completado.');
+          }
+        } else {
+          print('El día 21 aún no ha sido completado.');
+          setState(() {
+            isExitTestEnabled = false;
+          });
+        }
       } else {
-        print('Botón deshabilitado: Hoy no coincide con el start_date.');
+        print('Error al obtener el programa: ${response.body}');
+        setState(() {
+          isExitTestEnabled = false;
+        });
       }
     } else {
-      print('Error al obtener el programa: ${response.body}');
+      print('Usuario ya completó el test de estrés de salida.');
       setState(() {
         isExitTestEnabled = false;
       });
@@ -100,6 +120,12 @@ Future<void> _checkExitTest() async {
     });
   }
 }
+
+// Función auxiliar para comparar fechas sin tomar en cuenta la hora
+bool _isSameDay(DateTime date1, DateTime date2) {
+  return date1.year == date2.year && date1.month == date2.month && date1.day == date2.day;
+}
+
 
 
 
@@ -144,6 +170,11 @@ Future<void> _checkExitTest() async {
     setState(() {
       _selectedIndex = index;
       isChatOpen = index == 1;
+
+      if (index == 4 && showExitTest) {
+        print("Entro al boton 4");
+        showWidgets = true;
+      }
     });
   }
 
@@ -174,22 +205,7 @@ Future<void> _checkExitTest() async {
       );
    case 4:
   if (showExitTest) {
-    return Container(
-      color: Colors.white, // Fondo blanco unificado
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 125.0), // Espacio para la barra de navegación
-        child: SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: MediaQuery.of(context).size.height - 95.0, // Altura mínima igual al viewport menos el padding
-            ),
-            child: IntrinsicHeight( // Permite que el contenido interno se ajuste correctamente
-              child: TestEstresQuestionScreen(),
-            ),
-          ),
-        ),
-      ),
-    );
+    return TestEstresQuestionScreen();
   }
   return PlanScreen(
     nivelEstres: nivelEstres,
@@ -216,17 +232,18 @@ Widget build(BuildContext context) {
         Positioned.fill(
           child: _getSelectedWidget(),
         ),
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: CustomNavigationBar(
-            selectedIndex: _selectedIndex,
-            onItemTapped: _onItemTapped,
-            showExitTest: showExitTest,
-            isExitTestEnabled: isExitTestEnabled,
+        if (!showWidgets)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: CustomNavigationBar(
+              selectedIndex: _selectedIndex,
+              onItemTapped: _onItemTapped,
+              showExitTest: showExitTest,
+              isExitTestEnabled: isExitTestEnabled,
+            ),
           ),
-        ),
       ],
     ),
   );
@@ -343,7 +360,7 @@ Widget build(BuildContext context) {
       if (userId != null) {
         String fechaHoy = DateTime.now().toIso8601String().split('T')[0];
         final response = await http.get(
-          Uri.parse('http://localhost:3000/api/emociones_diarias/$fechaHoy'),
+          Uri.parse('${Config.apiUrl}/emociones_diarias/$fechaHoy'),
           headers: {
             'Authorization': 'Bearer $token',
           },
@@ -390,7 +407,7 @@ Widget build(BuildContext context) {
       if (userId != null && token != null) {
         String fechaHoy = DateTime.now().toIso8601String().split('T')[0];
         final response = await http.post(
-          Uri.parse('http://localhost:3000/api/emociones_diarias'),
+          Uri.parse('${Config.apiUrl}/emociones_diarias'),
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer $token',

@@ -92,7 +92,7 @@ class _StepScreenState extends State<StepScreen> {
 
   Future<void> _playAudioFromAPI(String text) async {
     try {
-      final url = Uri.parse('${Config.apiUrl}/voice/texttovoice/?text=$text&voiceId=Dorothy');
+      final url = Uri.parse('${Config.apiUrl}/voice/texttovoice/?text=$text&voiceId=Joanna');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {

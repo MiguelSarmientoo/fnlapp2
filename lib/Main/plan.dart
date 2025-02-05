@@ -16,16 +16,16 @@ class PlanScreen extends StatelessWidget {
       required this.programas});
 
   bool isProgramUnlocked(dynamic programa) {
-    //if (programa['start_date'] != null) {
-    //  DateTime temp = DateTime.parse(programa['start_date']).toLocal();
-    //  DateTime date = DateTime(temp.year, temp.month, temp.day);
-    //  bool isRightDay = DateTime.now().isAfter(date);
-    //  return isRightDay;
-    //} else {
-    //  return false;
-    //}
+    if (programa['start_date'] != null) {
+      DateTime temp = DateTime.parse(programa['start_date']).toLocal();
+      DateTime date = DateTime(temp.year, temp.month, temp.day);
+      bool isRightDay = DateTime.now().isAfter(date);
+      return isRightDay;
+    } else {
+      return false;
+    }
 
-    return true;
+    //return true;
   }
 
   double getProgramPercentage() {
@@ -155,35 +155,27 @@ class PlanScreen extends StatelessWidget {
                     ],
                   ),
                   SizedBox(width: 6),
-                  Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-                    decoration: BoxDecoration(
-                      color: backgroundColor,
-                      borderRadius: BorderRadius.circular(20.0),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Se ajusta el texto para que se acomode en varias líneas si es necesario
-                        ConstrainedBox(
-                          constraints: BoxConstraints(
-                              maxWidth: 180), // Controlamos el ancho máximo
-                          child: Text(
-                            programa['tipo_tecnica'],
-                            style: GoogleFonts.poppins(
-                                fontSize: 12.0,
-                                fontWeight: FontWeight.w400,
-                                color: textColor),
-                            maxLines:
-                                2, // Si el texto es largo, se ajusta en dos líneas como máximo
-                            overflow: TextOverflow
-                                .ellipsis, // Si sigue siendo largo, muestra "..."
-                          ),
+                  Flexible(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                      decoration: BoxDecoration(
+                        color: backgroundColor,
+                        borderRadius: BorderRadius.circular(20.0),
+                      ),
+                      child: Text(
+                        programa['tipo_tecnica'],
+                        style: GoogleFonts.poppins(
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w400,
+                          color: textColor,
                         ),
-                      ],
+                        maxLines: 2, // Si el texto es largo, se ajusta en dos líneas como máximo
+                        overflow: TextOverflow.ellipsis, // Si sigue siendo largo, muestra "..."
+                        textAlign: TextAlign.center, // Centra el texto dentro del cuadro
+                      ),
                     ),
                   ),
+
                 ],
               ),
             ],

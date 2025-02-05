@@ -15,12 +15,12 @@ if (localPropertiesFile.exists()) {
 
 def flutterVersionCode = localProperties.getProperty("flutter.versionCode")
 if (flutterVersionCode == null) {
-    flutterVersionCode = "1"
+    flutterVersionCode = "2"
 }
 
 def flutterVersionName = localProperties.getProperty("flutter.versionName")
 if (flutterVersionName == null) {
-    flutterVersionName = "1.0"
+    flutterVersionName = "1.0.1"
 }
 
 def keystoreProperties = new Properties()
@@ -51,8 +51,8 @@ android {
         // Flutter-specific configurations for SDK versions
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = flutterVersionCode.toInteger()
-        versionName = flutterVersionName
+        versionCode = 3
+        versionName = "1.0.2"
     }
 
     // 🔹 Agregar aquí la configuración de firma antes del bloque buildTypes

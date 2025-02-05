@@ -29,8 +29,8 @@ class _CargarProgramaScreenState extends State<CargarProgramaScreen> {
     Timer.periodic(Duration(milliseconds: 100), (timer) {
       // Cambiado a 1000 milisegundos (1 segundos)
       setState(() {
-        _progress += 1; // Incrementa en 1 cada 1 segundo
-        if (_progress >= 10) {
+        _progress += 2; // Incrementa en 1 cada 1 segundo
+        if (_progress >= 100) {
           timer
               .cancel(); // Detiene el temporizador cuando el progreso llega al 100%
           setState(() {

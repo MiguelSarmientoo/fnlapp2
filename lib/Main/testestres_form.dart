@@ -129,55 +129,55 @@ Future<void> submitTest() async {
     NivelEstres nivelEstres = estresResult['nivel'];
     int estresNivelId = estresResult['id'];
 
-    if (recordExists) {
-  // Si el registro ya existe, actualiza el nivel de estrés
-  final updateData = {
-    'user_id': userId,
-    'estres_nivel_id': estresNivelId,
-  };
-  final updateResponse = await http.post(
-    updateEstresUrl,
-    headers: {"Content-Type": "application/json"},
-    body: json.encode(updateData),
-  );
+  if (recordExists) {
+    // Si el registro ya existe, actualiza el nivel de estrés
+    final updateData = {
+      'user_id': userId,
+      'estres_nivel_id': estresNivelId,
+    };
+    final updateResponse = await http.post(
+      updateEstresUrl,
+      headers: {"Content-Type": "application/json"},
+      body: json.encode(updateData),
+    );
 
-  if (updateResponse.statusCode != 200) {
-    print('Error al actualizar el estres_nivel_id: ${updateResponse.body}');
+    if (updateResponse.statusCode != 200) {
+      print('Error al actualizar el estres_nivel_id: ${updateResponse.body}');
+      return;
+    }
+
+    print('Nivel de estrés actualizado correctamente.');
+
+    // Guardar las respuestas en la tabla `test_estres_salida`
+    final saveExitTestUrl = Uri.parse('${Config.apiUrl}/guardarTestEstresSalida');
+    final Map<String, dynamic> exitTestData = {
+      'user_id': userId,
+      for (int i = 0; i < selectedOptions.length; i++)
+        'pregunta_${i + 1}': selectedOptions[i],
+      'estado': 'activo',
+    };
+
+    final exitTestResponse = await http.post(
+      saveExitTestUrl,
+      headers: {"Content-Type": "application/json"},
+      body: json.encode(exitTestData),
+    );
+
+    if (exitTestResponse.statusCode != 200) {
+      print('Error al guardar el test de salida: ${exitTestResponse.body}');
+      return;
+    }
+
+    print('Test de salida guardado correctamente.');
+
+    // Redirigir al HomeScreen
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => HomeScreen()),
+      (Route<dynamic> route) => false, // Elimina todas las rutas anteriores
+    );
+
     return;
-  }
-
-  print('Nivel de estrés actualizado correctamente.');
-
-  // Guardar las respuestas en la tabla `test_estres_salida`
-  final saveExitTestUrl = Uri.parse('${Config.apiUrl}/guardarTestEstresSalida');
-  final Map<String, dynamic> exitTestData = {
-    'user_id': userId,
-    for (int i = 0; i < selectedOptions.length; i++)
-      'pregunta_${i + 1}': selectedOptions[i],
-    'estado': 'activo',
-  };
-
-  final exitTestResponse = await http.post(
-    saveExitTestUrl,
-    headers: {"Content-Type": "application/json"},
-    body: json.encode(exitTestData),
-  );
-
-  if (exitTestResponse.statusCode != 200) {
-    print('Error al guardar el test de salida: ${exitTestResponse.body}');
-    return;
-  }
-
-  print('Test de salida guardado correctamente.');
-
-  // Redirigir al HomeScreen
-  Navigator.pushAndRemoveUntil(
-    context,
-    MaterialPageRoute(builder: (context) => HomeScreen()),
-    (Route<dynamic> route) => false, // Elimina todas las rutas anteriores
-  );
-
-  return;
 }
  else {
       // Si no existe un registro, guardar el test completo
@@ -352,7 +352,6 @@ Future<void> submitTest() async {
             );
           },
         ),
-        title: Text('Pregunta ${currentQuestionIndex + 1} de ${questions.length}'),
       ),
       
       body: SingleChildScrollView(

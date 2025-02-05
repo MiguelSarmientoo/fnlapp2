@@ -13,8 +13,6 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -28,17 +26,26 @@ class ProfileScreen extends StatelessWidget {
         ),
         centerTitle: true,
         elevation: 1,
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Center(
-        child: Padding(
-          padding: EdgeInsets.all(screenWidth * 0.04),
-          child: profileData == null
-              ? const CircularProgressIndicator()
-              : SingleChildScrollView(
-                  child: _buildProfileInfo(screenWidth),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildProfileInfo(constraints.maxWidth),
+                    const SizedBox(height: 20), // Espaciado extra si es necesario
+                  ],
                 ),
-        ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -59,45 +66,39 @@ class ProfileScreen extends StatelessWidget {
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min, // Se ajusta al contenido
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _buildProfileImage(),
+          _buildProfileImage(screenWidth),
           const SizedBox(height: 20),
           _buildProfileDetails(),
           const SizedBox(height: 20),
           _buildAdditionalInfo(),
-          const Divider(
-            height: 30,
-            thickness: 1,
-            color: Colors.grey,
-          ),
+          const Divider(height: 30, thickness: 1, color: Colors.grey),
           const SizedBox(height: 20),
-          _buildLogoutButton(),
+          _buildLogoutButton(screenWidth),
           const SizedBox(height: 10),
           Text(
             'Versión 2.3',
-            style: GoogleFonts.roboto(
-              fontSize: 12.0,
-              color: Colors.grey,
-            ),
+            style: GoogleFonts.roboto(fontSize: 12.0, color: Colors.grey),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildProfileImage() {
+  Widget _buildProfileImage(double screenWidth) {
     return CircleAvatar(
-      radius: 60,
+      radius: screenWidth * 0.15, // Tamaño dinámico basado en el ancho de la pantalla
       backgroundColor: const Color(0xFFEEE8FB),
       backgroundImage: profileData?.profileImage != null
           ? NetworkImage(profileData!.profileImage!)
           : null,
       child: profileData?.profileImage == null
-          ? const Icon(
+          ? Icon(
               Icons.person,
-              size: 60,
-              color: Color(0xFF5027D0),
+              size: screenWidth * 0.15, // Tamaño dinámico
+              color: const Color(0xFF5027D0),
             )
           : null,
     );
@@ -172,7 +173,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLogoutButton() {
+  Widget _buildLogoutButton(double screenWidth) {
     return ElevatedButton.icon(
       onPressed: () => onLogout(),
       icon: const Icon(Icons.logout, size: 18, color: Colors.white),
@@ -183,7 +184,10 @@ class ProfileScreen extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFF5027D0),
         foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+        padding: EdgeInsets.symmetric(
+          horizontal: screenWidth * 0.1, // Padding dinámico
+          vertical: 15,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),

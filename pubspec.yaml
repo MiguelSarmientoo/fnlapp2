@@ -34,6 +34,7 @@ dependencies:
   audioplayers: ^6.1.1
   path_provider: ^2.1.5
   html: ^0.15.5
+  dart_jsonwebtoken: ^2.17.0
 
 dev_dependencies:
   flutter_test:

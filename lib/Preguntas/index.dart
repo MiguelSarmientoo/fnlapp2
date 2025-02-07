@@ -53,7 +53,31 @@ class _IndexScreenState extends State<IndexScreen> {
   void initState() {
     super.initState();
     _loadUserData();
+    _loadUserProgress();
     fetchData();
+  }
+
+  Future<void> _loadUserProgress() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      agreedToTerms = prefs.getBool('permisopoliticas') ?? false;
+      bool userresponsebool = prefs.getBool('userresponsebool') ?? false;
+      bool testestresbool = prefs.getBool('testestresbool') ?? false;
+
+      if (!agreedToTerms) {
+        currentQuestionIndex = -1; // 🔴 Mostrar pantalla de políticas
+      } else if (!userresponsebool) {
+        currentQuestionIndex = 0; // 🔴 Empezar preguntas
+      } else if (!testestresbool) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => TestEstresScreen()),
+        );
+      } else {
+        Navigator.pushReplacementNamed(context, '/home'); // 🔴 Si todo está completado
+      }
+    });
   }
 
   Future<void> _loadUserData() async {

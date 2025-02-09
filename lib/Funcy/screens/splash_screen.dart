@@ -22,7 +22,6 @@ class SplashScreen extends StatelessWidget {
       body: Center(
         child: Image.network(
           'http://funkyrecursos.s3.us-east-2.amazonaws.com/assets/logo_funcy_splash.png',
-           // Cambiado a URL
           width: 160,
           height: 180,
         ),

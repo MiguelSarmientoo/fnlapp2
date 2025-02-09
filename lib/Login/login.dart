@@ -76,29 +76,34 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> _fetchAndSavePermissions(int userId) async {
-    try {
-      final response = await http.get(
-        Uri.parse('${Config.apiUrl}/users/getpermisos/$userId'),
-        headers: {'Content-Type': 'application/json'},
-      );
+Future<void> _fetchAndSavePermissions(int userId) async {
+  try {
+    final response = await http.get(
+      Uri.parse('${Config.apiUrl}/users/getpermisos/$userId'),
+      headers: {'Content-Type': 'application/json'},
+    );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final permisos = data['permisos']; // ✅ Acceder correctamente
 
+      if (permisos != null) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('permisopoliticas', data['permisopoliticas']);
-        await prefs.setBool('userresponsebool', data['userresponsebool']);
-        await prefs.setBool('testestresbool', data['testestresbool']);
+        await prefs.setBool('permisopoliticas', permisos['permisopoliticas'] == true);
+        await prefs.setBool('userresponsebool', permisos['userresponsebool'] == true);
+        await prefs.setBool('testestresbool', permisos['testestresbool'] == true);
 
-        print('Permisos guardados: $data');
+        print('Permisos guardados: $permisos');
+      } else {
+        print('Error: No se encontraron permisos en la respuesta.');
       }
-    } catch (e) {
-      print('Error obteniendo permisos: $e');
+    } else {
+      print('Error en la solicitud: ${response.statusCode}');
     }
+  } catch (e) {
+    print('Error obteniendo permisos: $e');
   }
-
-  
+}
 
   Future<void> _saveUserData(String token, String username, int userId, String email) async {
     if (kIsWeb) {

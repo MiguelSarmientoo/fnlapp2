@@ -80,54 +80,41 @@ class PlanScreen extends StatelessWidget {
                           fontSize: 14.0, color: Colors.black87),
                     ),
                   ),
-                  programa['completed_date'] == null
-                      ? GestureDetector(
-                          onTap: () {
-                            dynamic stepsData = programa['guia'];
-                            List<dynamic> steps;
+                  GestureDetector(
+                    onTap: () {
+                      dynamic stepsData = programa['guia'];
+                      List<dynamic> steps;
 
-                            if (stepsData is String) {
-                              steps = json.decode(stepsData);
-                            } else {
-                              steps = stepsData;
-                            }
+                      if (stepsData is String) {
+                        steps = json.decode(stepsData);
+                      } else {
+                        steps = stepsData;
+                      }
 
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => StepScreen(
-                                  steps: List<String>.from(json.decode(programa[
-                                      'guia'])), // Convertimos el JSON a una lista de String
-                                  tecnicaNombre: programa['nombre_tecnica'],
-                                  dia: int.tryParse(
-                                          programa['dia'].toString()) ??
-                                      0,
-                                  userId: int.tryParse(
-                                          programa['user_id'].toString()) ??
-                                      0,
-                                  tecnicaId:
-                                      int.tryParse(programa['id'].toString()) ??
-                                          0,
-                                  url_img: programa['url_img'],
-                                ),
-                              ),
-                            );
-                          },
-                          child: CircleAvatar(
-                            backgroundColor: Color.fromARGB(255, 237, 221, 255),
-                            radius: 24,
-                            child: Icon(Icons.play_arrow,
-                                size: 28,
-                                color: Color.fromARGB(255, 75, 21, 141)),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => StepScreen(
+                            steps: List<String>.from(steps),
+                            tecnicaNombre: programa['nombre_tecnica'],
+                            dia: int.tryParse(programa['dia'].toString()) ?? 0,
+                            userId: int.tryParse(programa['user_id'].toString()) ?? 0,
+                            tecnicaId: int.tryParse(programa['id'].toString()) ?? 0,
+                            url_img: programa['url_img'],
                           ),
-                        )
-                      : CircleAvatar(
-                          backgroundColor: Color.fromARGB(255, 15, 178, 0),
-                          radius: 24,
-                          child: Icon(Icons.check,
-                              size: 28,
-                              color: Color.fromARGB(255, 255, 255, 255)),
                         ),
+                      );
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 237, 221, 255),
+                      radius: 24,
+                      child: Icon(
+                        Icons.play_arrow,
+                        size: 28,
+                        color: Color.fromARGB(255, 75, 21, 141),
+                      ),
+                    ),
+                  ),
                 ],
               ),
               SizedBox(height: 12),

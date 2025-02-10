@@ -310,8 +310,7 @@ Widget build(BuildContext context) {
 
                               // Llamada a la API para verificar si el día fue completado
                               final response = await http.get(
-                                Uri.parse(
-                                    'http://localhost:3000/api/userprograma/${widget.userId}/act/${widget.dia}'),
+                                Uri.parse('${Config.apiUrl}/userprograma/${widget.userId}/act/${widget.dia}')
                               );
 
                               if (response.statusCode == 200) {

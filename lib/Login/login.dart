@@ -20,7 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final FlutterSecureStorage secureStorage = FlutterSecureStorage();
 
   Future<void> _login(BuildContext context) async {
-    if (!_formKey.currentState!.validate()) return;
+    if (_formKey.currentState == null || !_formKey.currentState!.validate()) return;
 
     final username = emailController.text.trim();
     final password = passwordController.text.trim();

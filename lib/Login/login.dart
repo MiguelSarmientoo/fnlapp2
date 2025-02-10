@@ -6,7 +6,6 @@ import '../config.dart'; // Importa el archivo de configuración
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
-
 class LoginScreen extends StatefulWidget {
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -18,12 +17,27 @@ class _LoginScreenState extends State<LoginScreen> {
   final ValueNotifier<bool> passwordVisible = ValueNotifier(false);
   final _formKey = GlobalKey<FormState>();
   final FlutterSecureStorage secureStorage = FlutterSecureStorage();
+  bool isLoading = false;  // Variable para controlar el estado de carga
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_formKey.currentState == null) {
+        print("Form is not initialized yet");
+      }
+    });
+  }
 
   Future<void> _login(BuildContext context) async {
     if (_formKey.currentState == null || !_formKey.currentState!.validate()) return;
 
     final username = emailController.text.trim();
     final password = passwordController.text.trim();
+
+    setState(() {
+      isLoading = true;  // Activar el indicador de carga
+    });
 
     try {
       final response = await http.post(
@@ -32,14 +46,23 @@ class _LoginScreenState extends State<LoginScreen> {
         body: jsonEncode({'username': username, 'password': password}),
       );
 
+      setState(() {
+        isLoading = false;  // Desactivar el indicador de carga
+      });
+
       if (response.statusCode == 200) {
         await _handleLoginResponse(context, response);
-      } else if (response.statusCode == 401) { 
+      } else if (response.statusCode == 401) {
         _showSnackBar(context, 'Credenciales Invalidas');
-      } else if (response.statusCode == 403) { 
+      } else if (response.statusCode == 403) {
         _showSnackBar(context, 'Usuario sin un rol');
+      } else {
+        _showSnackBar(context, 'Error desconocido: ${response.statusCode}');
       }
     } catch (e) {
+      setState(() {
+        isLoading = false;  // Desactivar el indicador de carga en caso de error
+      });
       print(e);
       _showSnackBar(context, 'Error: Intentar nuevamente o Contactar al soporte');
     }
@@ -76,34 +99,37 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-Future<void> _fetchAndSavePermissions(int userId) async {
-  try {
-    final response = await http.get(
-      Uri.parse('${Config.apiUrl}/users/getpermisos/$userId'),
-      headers: {'Content-Type': 'application/json'},
-    );
+    Future<void> _fetchAndSavePermissions(int userId) async {
+      try {
+        final response = await http.get(
+          Uri.parse('${Config.apiUrl}/users/getpermisos/$userId'),
+          headers: {'Content-Type': 'application/json'},
+        );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final permisos = data['permisos']; // ✅ Acceder correctamente
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
 
-      if (permisos != null) {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('permisopoliticas', permisos['permisopoliticas'] == true);
-        await prefs.setBool('userresponsebool', permisos['userresponsebool'] == true);
-        await prefs.setBool('testestresbool', permisos['testestresbool'] == true);
+          // Verificar si la clave 'permisos' existe y no es nula
+          final permisos = data['permisos'];
+          
+          if (permisos != null) {
+            // Verificar que las claves dentro de 'permisos' no sean nulas
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('permisopoliticas', permisos['permisopoliticas'] ?? false);
+            await prefs.setBool('userresponsebool', permisos['userresponsebool'] ?? false);
+            await prefs.setBool('testestresbool', permisos['testestresbool'] ?? false);
 
-        print('Permisos guardados: $permisos');
-      } else {
-        print('Error: No se encontraron permisos en la respuesta.');
+            print('Permisos guardados: $permisos');
+          } else {
+            print('Error: No se encontraron permisos en la respuesta.');
+          }
+        } else {
+          print('Error en la solicitud: ${response.statusCode}');
+        }
+      } catch (e) {
+        print('Error obteniendo permisos: $e');
       }
-    } else {
-      print('Error en la solicitud: ${response.statusCode}');
     }
-  } catch (e) {
-    print('Error obteniendo permisos: $e');
-  }
-}
 
   Future<void> _saveUserData(String token, String username, int userId, String email) async {
     if (kIsWeb) {
@@ -114,7 +140,7 @@ Future<void> _fetchAndSavePermissions(int userId) async {
       await prefs.setInt('userId', userId);
       await prefs.setString('email', email);
     } else {
-      // En Móviles, usar FlutterSecureStorageA
+      // En Móviles, usar FlutterSecureStorage
       const FlutterSecureStorage secureStorage = FlutterSecureStorage();
       await secureStorage.write(key: 'token', value: token);
       await secureStorage.write(key: 'username', value: username);
@@ -166,24 +192,26 @@ Future<void> _fetchAndSavePermissions(int userId) async {
                       SizedBox(height: 12.0),
                       _buildTextField(Icons.lock, 'Contraseña', passwordController, obscureText: true),
                       SizedBox(height: 32),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () => _login(context),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color.fromARGB(255, 61, 23, 126),
-                            padding: EdgeInsets.symmetric(vertical: 20),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0),
+                      isLoading
+                          ? Center(child: CircularProgressIndicator())
+                          : SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () => _login(context),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Color.fromARGB(255, 61, 23, 126),
+                                  padding: EdgeInsets.symmetric(vertical: 20),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30.0),
+                                  ),
+                                  elevation: 4,
+                                ),
+                                child: Text(
+                                  'Iniciar Sesión',
+                                  style: TextStyle(color: Colors.white, fontSize: 16),
+                                ),
+                              ),
                             ),
-                            elevation: 4,
-                          ),
-                          child: Text(
-                            'Iniciar Sesión',
-                            style: TextStyle(color: Colors.white, fontSize: 16),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),

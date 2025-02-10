@@ -56,6 +56,9 @@ Future<void> _checkExitTest() async {
 
   if (userId == null || token == null) {
     print('Error: userId o token no encontrados');
+    setState(() {
+      isExitTestEnabled = false;
+    });
     return;
   }
 
@@ -66,8 +69,8 @@ Future<void> _checkExitTest() async {
       headers: {'Authorization': 'Bearer $token'},
     );
 
-    if (response1.statusCode == 404) { // Si no ha completado el test de salida
-      
+    if (response1.statusCode == 404) {
+      // Si no ha completado el test de salida, verifica el programa de actividad 21
       final response = await http.get(
         Uri.parse('${Config.apiUrl}/userprograma/$userId/actividad/21'),
         headers: {'Authorization': 'Bearer $token'},
@@ -75,26 +78,23 @@ Future<void> _checkExitTest() async {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-
         final String? completedDateStr = data['completed_date']; // Fecha de completado
 
         if (completedDateStr != null) {
           final DateTime completedDate = DateTime.parse(completedDateStr);
           final DateTime today = DateTime.now();
 
-          // Si el día 21 se completó en el pasado o hoy, el test de salida sigue activo
-          bool showTest = today.isAfter(completedDate) || _isSameDay(today, completedDate);
+          // Verifica si el test de salida debe mostrarse
+          final bool showTest = today.isAfter(completedDate) || _isSameDay(today, completedDate);
 
           setState(() {
             showExitTest = showTest;
             isExitTestEnabled = showTest;
           });
 
-          if (showExitTest) {
-            print('Test de salida habilitado: El día 21 ya se completó.');
-          } else {
-            print('Test de salida deshabilitado: El día 21 aún no ha sido completado.');
-          }
+          print(showTest
+              ? 'Test de salida habilitado: El día 21 ya se completó.'
+              : 'Test de salida deshabilitado: El día 21 aún no ha sido completado.');
         } else {
           print('El día 21 aún no ha sido completado.');
           setState(() {
@@ -107,8 +107,15 @@ Future<void> _checkExitTest() async {
           isExitTestEnabled = false;
         });
       }
-    } else {
+    } else if (response1.statusCode == 200) {
+      // El usuario ya completó el test de salida
       print('Usuario ya completó el test de estrés de salida.');
+      setState(() {
+        isExitTestEnabled = false;
+      });
+    } else {
+      // Manejo de otros códigos de error en la respuesta de la API
+      print('Error al verificar el test de salida: ${response1.statusCode}');
       setState(() {
         isExitTestEnabled = false;
       });
@@ -121,13 +128,11 @@ Future<void> _checkExitTest() async {
   }
 }
 
-// Función auxiliar para comparar fechas sin tomar en cuenta la hora
 bool _isSameDay(DateTime date1, DateTime date2) {
-  return date1.year == date2.year && date1.month == date2.month && date1.day == date2.day;
+  return date1.year == date2.year &&
+         date1.month == date2.month &&
+         date1.day == date2.day;
 }
-
-
-
 
   Future<void> loadProfile() async {
     profileData = await fetchProfile();
@@ -352,33 +357,37 @@ Widget build(BuildContext context) {
 
 
 
-  Future<void> checkIfEmotionFilledForToday() async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      userId = prefs.getInt('userId');
+Future<void> checkIfEmotionFilledForToday() async {
+  try {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    userId = prefs.getInt('userId');
+    token = prefs.getString('token'); // Asegúrate de obtener el token también
 
-      if (userId != null) {
-        String fechaHoy = DateTime.now().toIso8601String().split('T')[0];
-        final response = await http.get(
-          Uri.parse('${Config.apiUrl}/emociones_diarias/$fechaHoy'),
-          headers: {
-            'Authorization': 'Bearer $token',
-          },
-        );
+    if (userId != null && token != null) {
+      String fechaHoy = DateTime.now().toIso8601String().split('T')[0];
+      final response = await http.get(
+        Uri.parse('${Config.apiUrl}/emociones_diarias/$fechaHoy'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
 
-        if (response.statusCode == 200) {
-          var data = json.decode(response.body);
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        setState(() {
           hasFilledEmotion = data['data'].isNotEmpty;
-        } else {
-          hasFilledEmotion = false;
-        }
+        });
+      } else {
+        setState(() {
+          hasFilledEmotion = false; // Si falla la llamada, lo marcamos como no completado
+        });
       }
-    } catch (e) {
-      hasFilledEmotion = false;
     }
-
-    setState(() {});
+  } catch (e) {
+    print('Error al verificar las emociones de hoy: $e');
+    setState(() {
+      hasFilledEmotion = false;
+    });
   }
+}
 
   void _showEmotionModal() {
     showDialog(

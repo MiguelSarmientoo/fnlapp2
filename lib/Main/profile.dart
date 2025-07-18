@@ -5,7 +5,6 @@ import 'models/profile_data.dart';
 class ProfileScreen extends StatelessWidget {
   final ProfileData? profileData;
   final Function onLogout;
-
   ProfileScreen({
     required this.profileData,
     required this.onLogout,
@@ -109,7 +108,7 @@ class ProfileScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
-          profileData?.email ?? 'Cargando...',
+          profileData?.nombres ?? 'Usuario',
           style: GoogleFonts.roboto(
             fontSize: 20.0,
             fontWeight: FontWeight.bold,
@@ -118,7 +117,7 @@ class ProfileScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          profileData?.email ?? 'Nombre no disponible',
+          (profileData?.nombres ?? 'Usuario') + " " + (profileData?.apellidos ?? ''),
           style: GoogleFonts.roboto(
             fontSize: 16.0,
             fontWeight: FontWeight.w400,

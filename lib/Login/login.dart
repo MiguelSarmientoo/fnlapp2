@@ -80,17 +80,11 @@ class _LoginScreenState extends State<LoginScreen> {
       if (token != null && username != null && userId != null && email != null) {
         await _saveUserData(token, username, userId, email);
 
-        // 🔴 Primero obtenemos y guardamos los permisos actualizados
+
         await _fetchAndSavePermissions(userId);
 
-        // 🔴 Luego, los leemos desde SharedPreferences
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        bool permisopoliticas = prefs.getBool('permisopoliticas') ?? false;
-        bool userresponsebool = prefs.getBool('userresponsebool') ?? false;
-        bool testestresbool = prefs.getBool('testestresbool') ?? false;
 
-        // 🔴 Finalmente, redirigimos según el estado actualizado
-        _navigateBasedOnPermission(context, permisopoliticas, userresponsebool, testestresbool);
+        _navigateBasedOnPermission(context);
       } else {
         _showSnackBar(context, 'Datos de autenticación no recibidos');
       }
@@ -132,31 +126,18 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
   Future<void> _saveUserData(String token, String username, int userId, String email) async {
-    if (kIsWeb) {
-      // En Web, usar SharedPreferences
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', token);
-      await prefs.setString('username', username);
-      await prefs.setInt('userId', userId);
-      await prefs.setString('email', email);
-    } else {
-      // En Móviles, usar FlutterSecureStorage
-      const FlutterSecureStorage secureStorage = FlutterSecureStorage();
-      await secureStorage.write(key: 'token', value: token);
-      await secureStorage.write(key: 'username', value: username);
-      await secureStorage.write(key: 'userId', value: userId.toString());
-      await secureStorage.write(key: 'email', value: email);
-    }
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    print("TOKEN GUARDADO: $token");
+    await prefs.setString('token', token);
+    await prefs.setString('username', username);
+    await prefs.setInt('userId', userId);
+    await prefs.setString('email', email);
+
+    print("TOKEN GUARDADO en SharedPreferences: $token");
   }
 
-  void _navigateBasedOnPermission(BuildContext context, bool? permisopoliticas, bool? userresponsebool, bool? testestresbool) {
-    Navigator.pushReplacementNamed(context, '/index', arguments: {
-      'permisopoliticas': permisopoliticas ?? false,
-      'userresponsebool': userresponsebool ?? false,
-      'testestresbool': testestresbool ?? false,
-    });
+  void _navigateBasedOnPermission(BuildContext context) {
+    Navigator.pushReplacementNamed(context, '/');
   }
 
   void _showSnackBar(BuildContext context, String message) {

@@ -5,8 +5,12 @@ import 'package:fnlapp/Main/cargarprograma.dart';
 import 'package:fnlapp/Main/home.dart';
 import '../Util/api_service.dart';
 import 'package:fnlapp/SplashScreen/splashscreen.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
+
+
 
 void main() {
+  usePathUrlStrategy(); 
   runApp(const MyApp());
 }
 
@@ -16,6 +20,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ApiService apiService = ApiService();
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Funcy FNL',
@@ -24,12 +30,17 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       // Define tus rutas
-      initialRoute: '/', // Ruta inicial es el splash
+      initialRoute: '/',
+      // Definimos todas las rutas de forma estática
       routes: {
-        '/': (context) => SplashScreen(), // Splash es la primera pantalla
-        '/login': (context) => LoginScreen(), // LoginScreen después del splash
-        '/index': (context) => IndexScreen(username: 'username', apiServiceWithToken: ApiService()),
+        '/': (context) => const SplashScreen(),
+        '/login': (context) => LoginScreen(),
         '/home': (context) => HomeScreen(),
+        // IndexScreen necesita parámetros, así que lo manejamos de esta forma
+        '/index': (context) => IndexScreen(
+          username: 'username', // Este dato debería venir de SharedPreferences
+          apiServiceWithToken: apiService,
+        ),
       },
     );
   }
